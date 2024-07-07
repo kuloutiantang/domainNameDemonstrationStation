@@ -1,0 +1,27 @@
+@import './base.css';
+
+#app {
+  min-height: 100vh;
+  position: relative;
+}
+
+a {
+  color: var(--color-text);
+  text-decoration: none; /* 去除下划线 */
+  > :link {
+    /* 未被访问的链接 */
+    color: var(--color-text);
+  }
+  > :visited {
+    /* 已被访问过的链接 */
+    color: var(--color-text);
+  }
+  > :hover {
+    /* 鼠标悬浮在上的链接 */
+    color: var(--color-text);
+  }
+  > :active {
+    /* 鼠标点中激活链接 */
+    color: var(--color-text);
+  }
+}
