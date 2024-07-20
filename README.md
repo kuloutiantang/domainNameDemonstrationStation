@@ -1,6 +1,10 @@
-# domainNameDemonstrationStation
+# domainNameMasterStation
 
-域名演示站
+<!--
+域名示演站
+先不改名
+-->
+域名主站
 
 ## 安装
 

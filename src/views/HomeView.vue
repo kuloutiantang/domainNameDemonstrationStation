@@ -5,6 +5,8 @@ import VersionNumber from '@/components/VersionNumber.vue'
 const colorR = ref(255)
 const colorG = ref(255)
 const colorB = ref(255)
+const count = ref(0)
+const targetColor = ref([255, 255, 255])
 
 onMounted(() => {
   initialColor()
@@ -114,6 +116,18 @@ const gradient = (c) => {
   c = c > 255 ? 255 : c
   return c
 }
+
+const accumulation = () => {
+  count.value++
+  if (count.value >= 7) {
+    count.value = 0
+    // 跳转
+  } else {
+    colorR.value += (targetColor.value[0] - colorR.value) * (1 / (7 - count.value))
+    colorG.value += (targetColor.value[1] - colorG.value) * (1 / (7 - count.value))
+    colorB.value += (targetColor.value[2] - colorB.value) * (1 / (7 - count.value))
+  }
+}
 </script>
 
 <template>
@@ -121,7 +135,7 @@ const gradient = (c) => {
     class="mid"
     :style="'filter: drop-shadow(0 0 10vh rgb(' + colorR + ',' + colorG + ',' + colorB + '))'"
   >
-    <div>
+    <div class="select-none" @click="accumulation">
       <img
         :style="'filter: drop-shadow(0 100vh 0 rgb(' + colorR + ',' + colorG + ',' + colorB + '))'"
         src="/src/assets/logop.png"
