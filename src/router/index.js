@@ -10,6 +10,14 @@ const router = createRouter({
       meta: {
         title: '大的要来了！'
       }
+    },
+    {
+      path: '/understand',
+      name: '知识碎片',
+      component: () => import('../views/pages/knowledgeFragments.vue'),
+      meta: {
+        title: '知识碎片'
+      }
     }
   ]
 })

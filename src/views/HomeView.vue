@@ -1,6 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import VersionNumber from '@/components/VersionNumber.vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 
 const colorR = ref(255)
 const colorG = ref(255)
@@ -122,6 +124,7 @@ const accumulation = () => {
   if (count.value >= 7) {
     count.value = 0
     // 跳转
+    router.push('/understand')
   } else {
     colorR.value += (targetColor.value[0] - colorR.value) * (1 / (7 - count.value))
     colorG.value += (targetColor.value[1] - colorG.value) * (1 / (7 - count.value))

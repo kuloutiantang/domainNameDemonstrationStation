@@ -10,7 +10,9 @@ defineProps({
 
 <template>
   <div class="line">
-    <a href="http://beian.miit.gov.cn/" target="_blank" rel="noopener">{{ versionNumber }}</a>
+    <a tabIndex="-1" href="http://beian.miit.gov.cn/" target="_blank" rel="noopener">{{
+      versionNumber
+    }}</a>
   </div>
 </template>
 
