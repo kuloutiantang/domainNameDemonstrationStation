@@ -44,8 +44,8 @@ const calculateSorting = async () => {
   await nextTick()
   allocationColumn()
   rendering()
-  await nextTick()
-  deleteSlot()
+  // await nextTick()
+  // deleteSlot()
 }
 /**
  * 元素高度分配列
@@ -92,9 +92,9 @@ const rendering = () => {
 /**
  * 删除插槽
  */
-const deleteSlot = () => {
-  original.value.innerHTML = ''
-}
+// const deleteSlot = () => {
+//   original.value.innerHTML = ''
+// }
 </script>
 
 <template>
