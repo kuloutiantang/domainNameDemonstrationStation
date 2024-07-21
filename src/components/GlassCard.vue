@@ -8,8 +8,8 @@
 
 <style scoped>
 .glass {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--color-border-hover);
+  background: var(--color-background-soft);
   border-radius: 14px;
   flex: none;
   display: flex;

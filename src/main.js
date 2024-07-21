@@ -1,3 +1,4 @@
+import 'github-markdown-css'
 import './assets/main.css'
 
 import 'virtual:uno.css' // 引入unocss

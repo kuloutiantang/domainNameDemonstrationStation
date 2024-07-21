@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUpdated } from 'vue'
+import { ref, onMounted, onUpdated, nextTick } from 'vue'
 
 const props = defineProps({
   gap: {
@@ -12,14 +12,14 @@ const props = defineProps({
   }
 })
 
-const original = ref(null)
-const shows = ref(null)
+const original = ref(null) // 原始元素
+const shows = ref(null) // 显示元素
 
-const column = ref(0)
-const numberOfColumns = ref(0)
-const rootWidth = ref(0)
-const spacing = ref(0)
-const itemWidth = ref(0)
+const column = ref(0) // 填充列数
+const numberOfColumns = ref(0) // 子元素列数
+const rootWidth = ref(0) // 根元素宽度
+const spacing = ref(0) // 间距
+const itemWidth = ref(0) // 元素宽度
 
 onMounted(() => {
   // 列数
@@ -34,10 +34,19 @@ onMounted(() => {
     (rootWidth.value - (numberOfColumns.value - column.value) * spacing.value) / column.value
 })
 onUpdated(() => {
-  allocationColumn()
-  rendering()
+  calculateSorting()
 })
 
+/**
+ * 刷新
+ */
+const calculateSorting = async () => {
+  await nextTick()
+  allocationColumn()
+  rendering()
+  await nextTick()
+  deleteSlot()
+}
 /**
  * 元素高度分配列
  */
@@ -49,7 +58,7 @@ const allocationColumn = () => {
   for (let index = 0; index < original.value.children.length; index++) {
     let thisalign = findMinIndex(sortArr)
     original.value.children[index].align = thisalign
-    sortArr[thisalign] += original.value.children[index].scrollHeight
+    sortArr[thisalign] += original.value.children[index].scrollHeight + 2 + spacing.value
   }
 }
 /**
@@ -80,11 +89,17 @@ const rendering = () => {
         original.value.children[index].outerHTML)
   }
 }
+/**
+ * 删除插槽
+ */
+const deleteSlot = () => {
+  original.value.innerHTML = ''
+}
 </script>
 
 <template>
   <div>
-    <div ref="original" class="hide">
+    <div ref="original" :style="{ '--son-item-width': itemWidth + 'px' }" class="hide">
       <slot></slot>
     </div>
     <div ref="shows" class="column box-border">
@@ -92,7 +107,7 @@ const rendering = () => {
         v-for="n in numberOfColumns"
         :key="n"
         class="son"
-        :style="{ '--spacing-px': spacing + 'px' }"
+        :style="{ '--spacing-px': spacing + 'px', '--width-px': itemWidth + 'px' }"
       ></div>
     </div>
   </div>
@@ -106,6 +121,9 @@ const rendering = () => {
   transform: rotateY(90deg);
   display: flex;
   flex-flow: row nowrap;
+  & > * {
+    width: var(--son-item-width);
+  }
 }
 .column {
   width: 100%;
@@ -120,7 +138,8 @@ const rendering = () => {
       flex: none;
     }
     &:nth-child(2n + 1) {
-      flex: auto;
+      width: var(--width-px);
+      flex: none;
     }
     & > * {
       margin-bottom: var(--spacing-px);
