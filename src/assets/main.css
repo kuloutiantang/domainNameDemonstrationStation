@@ -1,5 +1,10 @@
 @import './base.css';
 
+::-webkit-scrollbar {
+  height: 0px;
+  width: 0px;
+}
+
 #app {
   min-height: 100vh;
   position: relative;
@@ -35,4 +40,17 @@ a {
   padding: 7px;
   background-color: transparent;
   font-size: 21px;
+}
+
+.bg-theme {
+  background: var(--color-background);
+}
+.bg-untheme {
+  background: var(--color-text);
+}
+.text-theme {
+  color: var(--color-text);
+}
+.text-untheme {
+  color: var(--color-background);
 }
