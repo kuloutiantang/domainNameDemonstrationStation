@@ -44,8 +44,8 @@ const calculateSorting = async () => {
   await nextTick()
   allocationColumn()
   rendering()
-  // await nextTick()
-  // deleteSlot()
+  await nextTick()
+  deleteSlot()
 }
 /**
  * 元素高度分配列
@@ -85,16 +85,17 @@ const rendering = () => {
   // 插入
   for (let index = 0; index < original.value.children.length; index++) {
     shows.value.children[2 * original.value.children[index].align] &&
-      (shows.value.children[2 * original.value.children[index].align].innerHTML +=
-        original.value.children[index].outerHTML)
+      shows.value.children[2 * original.value.children[index].align].appendChild(
+        original.value.children[index]
+      )
   }
 }
 /**
  * 删除插槽
  */
-// const deleteSlot = () => {
-//   original.value.innerHTML = ''
-// }
+const deleteSlot = () => {
+  original.value.innerHTML = ''
+}
 </script>
 
 <template>

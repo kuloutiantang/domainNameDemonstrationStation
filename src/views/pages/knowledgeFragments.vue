@@ -2,9 +2,9 @@
 import GlassCard from '@/components/GlassCard.vue'
 import EdenWaterfallFlow from '@/components/EdenWaterfallFlow/EdenWaterfallFlow.vue'
 import { ref, onMounted, computed, toRaw } from 'vue'
-
 import { marked } from 'marked'
 import {
+  NMessageProvider,
   NModal,
   NInputGroup,
   NInput,
@@ -18,22 +18,36 @@ import {
 } from 'naive-ui'
 import axios from 'axios'
 
-const text = ref('')
-const html = ref('')
-const dataCompleted = ref(false)
-const articleList = ref([])
-const showSearch = ref(false)
-const showLoginWindow = ref(false)
+const loginFormRef = ref(null) // 登录表单
+
+const searchText = ref('') // 搜索框文本
+const dataCompleted = ref(false) // 数据是否加载完成
+const articleList = ref([]) // 知识碎片
+const showSearch = ref(false) // 搜索框开关
+const isLogin = ref('') // 是否登录
+const showLoginWindow = ref(false) // 登录窗口开关
 const loginFormData = ref({
   email: '',
   password: ''
-})
+}) // 登录表单数据
 const loginFormRules = {
-  email: {
-    required: true,
-    message: '请输入邮箱',
-    trigger: ['blur', 'change', 'input']
-  },
+  email: [
+    {
+      required: true,
+      message: '请输入邮箱',
+      trigger: ['blur', 'change', 'input']
+    },
+    {
+      trigger: ['blur', 'change', 'input'],
+      level: 'error',
+      validator(_rule, value) {
+        if (value.length > 30) {
+          return new Error('过长')
+        }
+        return true
+      }
+    }
+  ],
   password: [
     {
       required: true,
@@ -45,13 +59,23 @@ const loginFormRules = {
       level: 'warning',
       validator(_rule, value) {
         if (value.length < 6) {
-          return new Error('请输入密码')
+          return new Error('码不是很密')
+        }
+        return true
+      }
+    },
+    {
+      trigger: ['blur', 'change', 'input'],
+      level: 'error',
+      validator(_rule, value) {
+        if (value.length > 16) {
+          return new Error('过长')
         }
         return true
       }
     }
   ]
-}
+} // 登录表单验证规则
 
 const emailOptions = computed(() => {
   return ['@qq.com', '@gmail.com', '@163.com'].map((suffix) => {
@@ -64,10 +88,10 @@ const emailOptions = computed(() => {
 })
 
 onMounted(() => {
+  // 静默登录
+  autoLogin()
   // 获取知识碎片
   getArticle()
-  text.value = '`let a = 1234567890`'
-  html.value = marked.parse(text.value)
 })
 
 /**
@@ -107,23 +131,102 @@ const formatTimestampToYmdHm = (timestamp) => {
   return year + '年' + month + '月' + day + '日 ' + hours + '点' + minutes + '分'
 }
 /**
+ * 显示登录窗口
+ */
+const toShowLoginWindow = () => {
+  showLoginWindow.value = true
+  loginFormData.value = {
+    email: '',
+    password: ''
+  }
+}
+const autoLogin = () => {
+  let cookieUser = getCookie('user')
+  if (cookieUser) {
+    let cookieUserArr = JSON.parse(cookieUser)
+    return login(cookieUserArr)
+  } else {
+    return false
+  }
+}
+/**
+ * 获取cookie
+ * @param name cookie名称
+ */
+const getCookie = (name) => {
+  var strcookie = document.cookie //获取cookie字符串
+  var arrcookie = strcookie.split('; ') //分割
+  //遍历匹配
+  for (var i = 0; i < arrcookie.length; i++) {
+    var arr = arrcookie[i].split('=')
+    if (arr[0] == name) {
+      return arr[1]
+    }
+  }
+  return ''
+}
+/**
  * 登录
  */
-const login = () => {
-  showLoginWindow.value = false
-  let data = toRaw(loginFormData.value)
-  console.log(data)
+const tryLogin = (e) => {
+  e.preventDefault()
+  loginFormRef.value?.validate((errors) => {
+    if (!errors) {
+      showLoginWindow.value = false
+      let data = toRaw(loginFormData.value)
+      // 登录
+      login(data)
+    }
+  })
+}
+/**
+ * 登录
+ * @param data 登录数据
+ */
+const login = (data) => {
+  axios
+    .post('http://phpapi.kuloutiantang.top/www/index/login', data)
+    .then((res) => {
+      if (res.data.code == 1) {
+        let expirationDate = new Date(new Date().setMonth(new Date().getMonth() + 1))
+        let userJson = JSON.stringify(data)
+        document.cookie = 'user=' + userJson + '; expires=' + expirationDate
+        isLogin.value = data.email
+        return true
+      } else {
+        logout()
+        return false
+      }
+    })
+    .catch(() => {
+      logout()
+      return false
+    })
+}
+/**
+ * 搜索
+ */
+const search = () => {
+  showSearch.value = false
 }
 /**
  * 搜索标签
  * @param tags 标签
  */
 const searchTag = (tags) => {
-  console.log(123)
   console.log(tags)
+}
+/**
+ * 退出登录
+ */
+const logout = () => {
+  let expiresDelete = new Date()
+  document.cookie = 'user=; expires=' + expiresDelete
+  isLogin.value = ''
 }
 </script>
 <template>
+  <NMessageProvider></NMessageProvider>
   <div class="w-100vw h-100vh flex flex-col justify-start items-center">
     <div
       class="box-border bg-theme w-full py-14px flex flex-col justify-center items-center position-sticky top-0 border-1px border-b-solid z-2"
@@ -134,8 +237,21 @@ const searchTag = (tags) => {
         </template>
         <template #extra>
           <NSpace>
-            <NButton @click="showLoginWindow = true" strong tertiary type="tertiary">登录</NButton>
-            <NButton @click="showSearch = true" strong tertiary type="tertiary">搜索</NButton>
+            <div class="h-full flex justify-center items-center">
+              <span>{{ searchText }}</span>
+            </div>
+            <NButton @click="showSearch = true" strong :type="isLogin ? 'info' : 'tertiary'"
+              >搜索</NButton
+            >
+            <NButton v-if="isLogin != ''" strong type="warning">编辑</NButton>
+            <NButton v-if="isLogin != ''" strong type="success">添加</NButton>
+            <NButton v-if="isLogin == ''" @click="toShowLoginWindow" strong type="tertiary"
+              >登录</NButton
+            >
+            <NButton v-if="isLogin != ''" @click="logout" strong type="error">退出</NButton>
+            <div v-if="isLogin != ''" class="h-full flex justify-center items-center select-none">
+              <span>{{ isLogin }}</span>
+            </div>
           </NSpace>
         </template>
       </NPageHeader>
@@ -165,16 +281,30 @@ const searchTag = (tags) => {
   <NModal v-model:show="showSearch">
     <div class="bg-theme p-2rem rd-7px border-solid border-1px w-62% max-w-1200px">
       <NInputGroup>
-        <n-input type="text" size="large" placeholder="以+拼接内容" clearable />
-        <NButton @click="showSearch = false" type="primary" size="large" secondary>搜索</NButton>
+        <n-input
+          @keyup.enter="search"
+          v-model:value="searchText"
+          type="text"
+          size="large"
+          placeholder="以+拼接内容"
+          clearable
+        />
+        <NButton @click="search" type="primary" size="large" secondary>搜索</NButton>
       </NInputGroup>
     </div>
   </NModal>
   <NModal v-model:show="showLoginWindow">
     <div class="bg-theme p-3rem rd-7px border-solid border-1px max-w-1200px">
-      <NForm :model="loginFormData" :rules="loginFormRules" size="large">
+      <NForm
+        @keyup.enter="login"
+        ref="loginFormRef"
+        :model="loginFormData"
+        :rules="loginFormRules"
+        size="large"
+      >
         <NFormItem label="登录邮箱" path="email">
           <NAutoComplete
+            tabindex="2"
             v-model:value="loginFormData.email"
             :options="emailOptions"
             placeholder="邮箱"
@@ -184,7 +314,7 @@ const searchTag = (tags) => {
           <NInput v-model:value="loginFormData.password" type="password" placeholder="密码" />
         </NFormItem>
         <NFormItem label=" ">
-          <NButton @click="login" class="w-full" attr-type="button">登录</NButton>
+          <NButton @click="tryLogin" class="w-full" attr-type="button">登录</NButton>
         </NFormItem>
       </NForm>
     </div>
