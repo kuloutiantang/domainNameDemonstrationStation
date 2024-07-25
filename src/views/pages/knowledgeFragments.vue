@@ -1,10 +1,9 @@
 <script setup>
 import GlassCard from '@/components/GlassCard.vue'
 import EdenWaterfallFlow from '@/components/EdenWaterfallFlow/EdenWaterfallFlow.vue'
-import { ref, onMounted, computed, toRaw } from 'vue'
+import { ref, onMounted, computed, toRaw, h } from 'vue'
 import { marked } from 'marked'
 import {
-  NMessageProvider,
   NModal,
   NInputGroup,
   NInput,
@@ -14,22 +13,36 @@ import {
   NPageHeader,
   NAutoComplete,
   NForm,
-  NFormItem
+  NFormItem,
+  NDynamicTags,
+  NDivider,
+  useDialog,
+  useMessage
 } from 'naive-ui'
+const dialog = useDialog()
+const message = useMessage()
 import axios from 'axios'
 
 const loginFormRef = ref(null) // 登录表单
+const articleFormRef = ref(null) // 文章表单
 
 const searchText = ref('') // 搜索框文本
 const dataCompleted = ref(false) // 数据是否加载完成
 const articleList = ref([]) // 知识碎片
 const showSearch = ref(false) // 搜索框开关
+const showEditor = ref(false) // 编辑框开关
+const editModal = ref(false) // 编辑模式
+const editId = ref(0) // 编辑模式下文章id
 const isLogin = ref('') // 是否登录
 const showLoginWindow = ref(false) // 登录窗口开关
 const loginFormData = ref({
   email: '',
   password: ''
 }) // 登录表单数据
+const articleFormData = ref({
+  tags: [],
+  content: ''
+})
 const loginFormRules = {
   email: [
     {
@@ -76,6 +89,15 @@ const loginFormRules = {
     }
   ]
 } // 登录表单验证规则
+const articleFormRules = {
+  tags: {
+    trigger: ['change'],
+    validator(rule, value) {
+      if (value.length >= 7) return new Error('不得超过七个标签')
+      return true
+    }
+  }
+}
 
 const emailOptions = computed(() => {
   return ['@qq.com', '@gmail.com', '@163.com'].map((suffix) => {
@@ -90,24 +112,32 @@ const emailOptions = computed(() => {
 onMounted(() => {
   // 静默登录
   autoLogin()
-  // 获取知识碎片
-  getArticle()
+  // 加载数据
+  getData()
 })
 
+const getData = () => {
+  dataCompleted.value = false
+  // 获取知识碎片
+  getArticle()
+}
 /**
  * 获取知识碎片
  */
 const getArticle = () => {
   axios.get('http://phpapi.kuloutiantang.top/www/index/article').then((res) => {
     if (res.data.code > 0 && res.data.code < 500) {
+      let list = []
       for (let k = 0; k < res.data.data.length; k++) {
         const item = res.data.data[k]
         let newItem = { ...item }
-        newItem.time = formatTimestampToYmdHm(item.updatetime)
+        newItem.timeStart = formatTimestampToYmdHm(item.createtime)
+        newItem.timeEnd = formatTimestampToYmdHm(item.updatetime)
         newItem.tagsArr = item.tags.split(',')
         newItem.markDown = marked.parse(item.content)
-        articleList.value.push(newItem)
+        list.push(newItem)
       }
+      articleList.value = list
       dataCompleted.value = true
     }
   })
@@ -128,7 +158,7 @@ const formatTimestampToYmdHm = (timestamp) => {
   var hours = ('0' + date.getHours()).slice(-2)
   var minutes = ('0' + date.getMinutes()).slice(-2)
   // 返回格式化的字符串
-  return year + '年' + month + '月' + day + '日 ' + hours + '点' + minutes + '分'
+  return ' ' + year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ' '
 }
 /**
  * 显示登录窗口
@@ -166,7 +196,7 @@ const getCookie = (name) => {
   return ''
 }
 /**
- * 登录
+ * 登录按钮
  */
 const tryLogin = (e) => {
   e.preventDefault()
@@ -192,8 +222,23 @@ const login = (data) => {
         let userJson = JSON.stringify(data)
         document.cookie = 'user=' + userJson + '; expires=' + expirationDate
         isLogin.value = data.email
+        message.create('欢迎 ' + data.email, {
+          icon: () =>
+            h('div', {
+              style: 'color: #fc0',
+              class: 'i-solar-confetti-minimalistic-bold-duotone'
+            }),
+          duration: 1400
+        })
         return true
       } else {
+        message.warning('你怎么想的？', {
+          icon: () =>
+            h('div', {
+              class: 'i-solar-question-square-bold'
+            }),
+          duration: 3500
+        })
         logout()
         return false
       }
@@ -207,14 +252,39 @@ const login = (data) => {
  * 搜索
  */
 const search = () => {
-  showSearch.value = false
+  if (searchText.value.length > 0) {
+    let text = '?text=' + searchText.value
+    axios.get('http://phpapi.kuloutiantang.top/www/index/article' + text).then((res) => {
+      if (res.data.code > 0 && res.data.code < 500) {
+        dataCompleted.value = false
+        let list = []
+        for (let k = 0; k < res.data.data.length; k++) {
+          const item = res.data.data[k]
+          let newItem = { ...item }
+          newItem.timeStart = formatTimestampToYmdHm(item.createtime)
+          newItem.timeEnd = formatTimestampToYmdHm(item.updatetime)
+          newItem.tagsArr = item.tags.split(',')
+          newItem.markDown = marked.parse(item.content)
+          list.push(newItem)
+        }
+        articleList.value = list
+        showSearch.value = false
+        dataCompleted.value = true
+      }
+    })
+  } else {
+    showSearch.value = false
+    getData()
+  }
 }
 /**
  * 搜索标签
  * @param tags 标签
  */
 const searchTag = (tags) => {
-  console.log(tags)
+  let text = ':' + tags
+  searchText.value = text
+  search()
 }
 /**
  * 退出登录
@@ -224,14 +294,84 @@ const logout = () => {
   document.cookie = 'user=; expires=' + expiresDelete
   isLogin.value = ''
 }
+/**
+ * 显示编辑窗口
+ */
+const toShowEditor = (item) => {
+  if (item == 0) {
+    editId.value = 0
+    articleFormData.value = {
+      tags: [],
+      content: ''
+    }
+    showEditor.value = true
+  } else {
+    editId.value = item.id
+    let tagsArr = JSON.parse(JSON.stringify(item.tagsArr))
+    let data = {
+      tags: tagsArr,
+      content: item.content
+    }
+    articleFormData.value = data
+    showEditor.value = true
+  }
+}
+/**
+ * 文章保存按钮
+ */
+const articleSave = () => {
+  articleFormRef.value?.validate((errors) => {
+    if (!errors) {
+      if (editModal.value) {
+        let data = {
+          tags: JSON.parse(JSON.stringify(articleFormData.value.tags)),
+          content: articleFormData.value.content
+        }
+        data.tags = data.tags.join(',')
+        axios
+          .put('http://phpapi.kuloutiantang.top/www/index/article?id=' + editId.value, data)
+          .then(() => {
+            showEditor.value = false
+            getData()
+          })
+      } else {
+        let data = toRaw(articleFormData.value)
+        data.tags = data.tags.join(',')
+        axios.post('http://phpapi.kuloutiantang.top/www/index/article', data).then(() => {
+          showEditor.value = false
+          getData()
+        })
+      }
+    }
+  })
+}
+const toDelete = (item) => {
+  dialog.error({
+    title: '警告',
+    content: '删除操作不可撤回',
+    positiveText: '确认删除',
+    negativeText: '返回',
+    onPositiveClick: () => {
+      axios.delete('http://phpapi.kuloutiantang.top/www/index/article?id=' + item.id).then(() => {
+        getData()
+      })
+    }
+  })
+}
+const randomHEX = () => {
+  let r = Math.floor(Math.random() * 0xcf + 0x1f).toString(16)
+  let g = Math.floor(Math.random() * 0xcf + 0x1f).toString(16)
+  let b = Math.floor(Math.random() * 0xcf + 0x1f).toString(16)
+  return '#' + r + g + b
+}
 </script>
 <template>
-  <NMessageProvider></NMessageProvider>
+  <!-- 正文 -->
   <div class="w-100vw h-100vh flex flex-col justify-start items-center">
     <div
       class="box-border bg-theme w-full py-14px flex flex-col justify-center items-center position-sticky top-0 border-1px border-b-solid z-2"
     >
-      <NPageHeader class="w-1200px">
+      <NPageHeader class="w-1200px <xl:w-full px-1rem">
         <template #title>
           <div class="fw-900 text-28px cursor-default">知识碎片</div>
         </template>
@@ -243,8 +383,12 @@ const logout = () => {
             <NButton @click="showSearch = true" strong :type="isLogin ? 'info' : 'tertiary'"
               >搜索</NButton
             >
-            <NButton v-if="isLogin != ''" strong type="warning">编辑</NButton>
-            <NButton v-if="isLogin != ''" strong type="success">添加</NButton>
+            <NButton v-if="isLogin != ''" @click="editModal = !editModal" strong type="warning"
+              >编辑</NButton
+            >
+            <NButton v-if="isLogin != ''" @click="toShowEditor(0)" strong type="success"
+              >添加</NButton
+            >
             <NButton v-if="isLogin == ''" @click="toShowLoginWindow" strong type="tertiary"
               >登录</NButton
             >
@@ -256,7 +400,10 @@ const logout = () => {
         </template>
       </NPageHeader>
     </div>
-    <div v-if="dataCompleted" class="box-border w-1200px flex-auto p-2rem">
+    <div class="hidden <xl:(block w-full h-full flex justify-center items-center)">
+      <div class="i-solar-monitor-smartphone-bold-duotone size-50px"></div>
+    </div>
+    <div v-if="dataCompleted" class="box-border w-1200px flex-auto p-2rem <xl:hidden">
       <EdenWaterfallFlow class="w-full h-full" :gap="49">
         <GlassCard v-for="(item_a, index_a) in articleList" :key="index_a" class="p-20px">
           <NSpace class="select-none">
@@ -265,7 +412,7 @@ const logout = () => {
               :key="index_a_ta"
               @click="searchTag(item_a_ta)"
             >
-              <NTag round class="cursor-pointer" :color="{ color: '#ff0000' + '22' }">
+              <NTag round class="cursor-pointer" :color="{ color: randomHEX() + '22' }">
                 {{ item_a_ta }}
               </NTag>
             </div>
@@ -273,11 +420,36 @@ const logout = () => {
           <div class="h-7px"></div>
           <div class="markdown-body" v-html="item_a.markDown"></div>
           <div class="h-14px"></div>
-          <div class="text-14px select-none">{{ item_a.time }}</div>
+          <div
+            class="w-full text-14px lh-21px select-none flex flex-row flex-wrap justify-between text-center"
+          >
+            <div class="break-keep">
+              <div
+                class="inline-block vertical-top size-21px i-solar-document-add-line-duotone"
+              ></div>
+              {{ item_a.timeEnd }}
+            </div>
+            <div class="break-keep">
+              <div
+                class="inline-block vertical-top size-21px i-solar-document-medicine-line-duotone"
+              ></div>
+              {{ item_a.timeStart }}
+            </div>
+          </div>
+          <div v-if="editModal" class="w-full">
+            <div class="h-7px"></div>
+            <NDivider />
+            <NSpace>
+              <NButton @click="toShowEditor(item_a)" type="success">编辑</NButton>
+              <NButton @click="toDelete(item_a)" type="error">删除</NButton>
+            </NSpace>
+            <div class="h-7px"></div>
+          </div>
         </GlassCard>
       </EdenWaterfallFlow>
     </div>
   </div>
+  <!-- 搜索窗口 -->
   <NModal v-model:show="showSearch">
     <div class="bg-theme p-2rem rd-7px border-solid border-1px w-62% max-w-1200px">
       <NInputGroup>
@@ -286,17 +458,18 @@ const logout = () => {
           v-model:value="searchText"
           type="text"
           size="large"
-          placeholder="以+拼接内容"
+          placeholder="我的建议是：不如Ctrl+F"
           clearable
         />
         <NButton @click="search" type="primary" size="large" secondary>搜索</NButton>
       </NInputGroup>
     </div>
   </NModal>
+  <!-- 登录窗口 -->
   <NModal v-model:show="showLoginWindow">
     <div class="bg-theme p-3rem rd-7px border-solid border-1px max-w-1200px">
       <NForm
-        @keyup.enter="login"
+        @keyup.enter="tryLogin"
         ref="loginFormRef"
         :model="loginFormData"
         :rules="loginFormRules"
@@ -315,6 +488,39 @@ const logout = () => {
         </NFormItem>
         <NFormItem label=" ">
           <NButton @click="tryLogin" class="w-full" attr-type="button">登录</NButton>
+        </NFormItem>
+      </NForm>
+    </div>
+  </NModal>
+  <!-- 编辑窗口 -->
+  <NModal v-model:show="showEditor">
+    <div class="bg-theme p-3rem rd-7px border-solid border-1px max-w-1200px">
+      <NForm
+        ref="articleFormRef"
+        :model="articleFormData"
+        :rules="articleFormRules"
+        size="large"
+        class="min-w-600px"
+      >
+        <NFormItem label="标签" path="tags">
+          <NDynamicTags v-model:value="articleFormData.tags" size="large" />
+        </NFormItem>
+        <NFormItem label="内容" path="content">
+          <NInput
+            v-model:value="articleFormData.content"
+            placeholder="内容"
+            type="textarea"
+            size="large"
+            :autosize="{
+              minRows: 3,
+              maxRows: 14
+            }"
+          />
+        </NFormItem>
+        <NFormItem label=" ">
+          <NButton @click="articleSave" class="w-full" attr-type="button" type="success"
+            >保存</NButton
+          >
         </NFormItem>
       </NForm>
     </div>

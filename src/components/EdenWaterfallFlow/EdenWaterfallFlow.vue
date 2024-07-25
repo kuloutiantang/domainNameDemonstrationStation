@@ -41,25 +41,30 @@ onUpdated(() => {
  * 刷新
  */
 const calculateSorting = async () => {
-  await nextTick()
-  allocationColumn()
-  rendering()
-  await nextTick()
-  deleteSlot()
-}
-/**
- * 元素高度分配列
- */
-const allocationColumn = () => {
+  // await nextTick()
   let sortArr = []
+  let newNode = shows.value.children
+  let oldNode = original.value.children
+  let times = oldNode.length
+  // 元素高度分配列
   for (let index = 0; index < column.value; index++) {
     sortArr[index] = 0
   }
-  for (let index = 0; index < original.value.children.length; index++) {
+  for (let index = 0; index < oldNode.length; index++) {
     let thisalign = findMinIndex(sortArr)
-    original.value.children[index].align = thisalign
-    sortArr[thisalign] += original.value.children[index].scrollHeight + 2 + spacing.value
+    oldNode[index].align = thisalign
+    sortArr[thisalign] += oldNode[index].scrollHeight + 2 + spacing.value
   }
+  // 清空
+  for (let index = 0; index < times; index++) {
+    newNode[index] && (newNode[index].innerHTML = '')
+  }
+  // 插入
+  for (let index = 0; index < times; index++) {
+    newNode[2 * oldNode[0].align] && newNode[2 * oldNode[0].align].appendChild(oldNode[0])
+  }
+  await nextTick()
+  deleteSlot()
 }
 /**
  * 数组中最小元素的下标
@@ -75,23 +80,7 @@ const findMinIndex = (arr) => {
   return minIndex
 }
 /**
- * 重新渲染
- */
-const rendering = () => {
-  // 清空
-  for (let index = 0; index < original.value.children.length; index++) {
-    shows.value.children[index] && (shows.value.children[index].innerHTML = '')
-  }
-  // 插入
-  for (let index = 0; index < original.value.children.length; index++) {
-    shows.value.children[2 * original.value.children[index].align] &&
-      shows.value.children[2 * original.value.children[index].align].appendChild(
-        original.value.children[index]
-      )
-  }
-}
-/**
- * 删除插槽
+ * 清空插槽
  */
 const deleteSlot = () => {
   original.value.innerHTML = ''
@@ -119,7 +108,7 @@ const deleteSlot = () => {
   max-width: 100%;
   height: 0px;
   overflow: visible;
-  transform: rotateY(90deg);
+  transform: rotateY(0deg);
   display: flex;
   flex-flow: row nowrap;
   & > * {
