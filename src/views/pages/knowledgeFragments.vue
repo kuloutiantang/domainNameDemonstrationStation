@@ -113,40 +113,60 @@ onMounted(() => {
   // 静默登录
   autoLogin()
   // 加载数据
-  getData()
+  getData(true)
 })
 
-const getData = () => {
-  dataCompleted.value = false
-  // 获取知识碎片
-  getArticle()
+const getData = (condition = false) => {
+  if (condition || dataCompleted.value) {
+    if (condition) {
+      searchText.value = ''
+    }
+    showSearch.value = false
+    showEditor.value = false
+    editModal.value = false
+    // 获取知识碎片
+    search()
+  } else {
+    message.info('数据加载中')
+  }
 }
 /**
- * 获取知识碎片
+ * 搜索获取知识碎片
  */
-const getArticle = () => {
-  axios.get('http://phpapi.kuloutiantang.top/www/index/article').then((res) => {
-    if (res.data.code > 0 && res.data.code < 500) {
-      let list = []
-      for (let k = 0; k < res.data.data.length; k++) {
-        const item = res.data.data[k]
-        let newItem = { ...item }
-        newItem.timeStart = formatTimestampToYmdHm(item.createtime)
-        newItem.timeEnd = formatTimestampToYmdHm(item.updatetime)
-        newItem.tagsArr = item.tags.split(',')
-        newItem.markDown = marked.parse(item.content)
-        list.push(newItem)
+const search = () => {
+  dataCompleted.value = false
+  let text = ''
+  if (searchText.value.length > 0) {
+    text = '?text=' + searchText.value
+  }
+  axios
+    .get('http://phpapi.kuloutiantang.top/www/index/article' + text)
+    .then((res) => {
+      if (res.data.code > 0 && res.data.code < 500) {
+        let list = []
+        for (let k = 0; k < res.data.data.length; k++) {
+          const item = res.data.data[k]
+          let newItem = { ...item }
+          newItem.timeStart = formatTimestampToYmdHm(item.createtime, 'ymd')
+          newItem.timeEnd = formatTimestampToYmdHm(item.updatetime, 'ymd')
+          newItem.tagsArr = item.tags.split(',')
+          newItem.markDown = marked.parse(item.content)
+          list.push(newItem)
+        }
+        articleList.value = list
+        showSearch.value = false
+        dataCompleted.value = true
       }
-      articleList.value = list
+    })
+    .catch(() => {
       dataCompleted.value = true
-    }
-  })
+    })
 }
 /**
  * 格式化时间戳
  * @param timestamp 时间戳
  */
-const formatTimestampToYmdHm = (timestamp) => {
+const formatTimestampToYmdHm = (timestamp, format = 'ymdhi') => {
   // 将秒级时间戳转换为毫秒级
   var msTimestamp = timestamp * 1000
   // 创建新的Date对象
@@ -157,8 +177,16 @@ const formatTimestampToYmdHm = (timestamp) => {
   var day = ('0' + date.getDate()).slice(-2)
   var hours = ('0' + date.getHours()).slice(-2)
   var minutes = ('0' + date.getMinutes()).slice(-2)
+  var seconds = ('0' + date.getSeconds()).slice(-2)
   // 返回格式化的字符串
-  return ' ' + year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ' '
+  if (format == 'ymdhis') {
+    return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds
+  } else if (format == 'ymd') {
+    return year + '-' + month + '-' + day
+  } else {
+    // 默认
+    return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes
+  }
 }
 /**
  * 显示登录窗口
@@ -248,35 +276,7 @@ const login = (data) => {
       return false
     })
 }
-/**
- * 搜索
- */
-const search = () => {
-  if (searchText.value.length > 0) {
-    let text = '?text=' + searchText.value
-    axios.get('http://phpapi.kuloutiantang.top/www/index/article' + text).then((res) => {
-      if (res.data.code > 0 && res.data.code < 500) {
-        dataCompleted.value = false
-        let list = []
-        for (let k = 0; k < res.data.data.length; k++) {
-          const item = res.data.data[k]
-          let newItem = { ...item }
-          newItem.timeStart = formatTimestampToYmdHm(item.createtime)
-          newItem.timeEnd = formatTimestampToYmdHm(item.updatetime)
-          newItem.tagsArr = item.tags.split(',')
-          newItem.markDown = marked.parse(item.content)
-          list.push(newItem)
-        }
-        articleList.value = list
-        showSearch.value = false
-        dataCompleted.value = true
-      }
-    })
-  } else {
-    showSearch.value = false
-    getData()
-  }
-}
+
 /**
  * 搜索标签
  * @param tags 标签
@@ -284,7 +284,7 @@ const search = () => {
 const searchTag = (tags) => {
   let text = ':' + tags
   searchText.value = text
-  search()
+  getData()
 }
 /**
  * 退出登录
@@ -331,14 +331,12 @@ const articleSave = () => {
         axios
           .put('http://phpapi.kuloutiantang.top/www/index/article?id=' + editId.value, data)
           .then(() => {
-            showEditor.value = false
             getData()
           })
       } else {
         let data = toRaw(articleFormData.value)
         data.tags = data.tags.join(',')
         axios.post('http://phpapi.kuloutiantang.top/www/index/article', data).then(() => {
-          showEditor.value = false
           getData()
         })
       }
@@ -369,11 +367,13 @@ const randomHEX = () => {
   <!-- 正文 -->
   <div class="w-100vw h-100vh flex flex-col justify-start items-center">
     <div
-      class="box-border bg-theme w-full py-14px flex flex-col justify-center items-center position-sticky top-0 border-1px border-b-solid z-2"
+      class="box-border bg-theme w-full py-14px flex flex-col justify-center items-center border-1px border-b-solid z-2"
     >
-      <NPageHeader class="w-1200px <xl:w-full px-1rem">
+      <NPageHeader class="w-1200px <xl:(w-full px-1rem)">
         <template #title>
-          <div class="fw-900 text-28px cursor-default">知识碎片</div>
+          <div class="fw-900 text-28px cursor-pointer select-none" @click="getData(true)">
+            知识碎片
+          </div>
         </template>
         <template #extra>
           <NSpace>
@@ -403,8 +403,11 @@ const randomHEX = () => {
     <div class="hidden <xl:(block w-full h-full flex justify-center items-center)">
       <div class="i-solar-monitor-smartphone-bold-duotone size-50px"></div>
     </div>
-    <div v-if="dataCompleted" class="box-border w-1200px flex-auto p-2rem <xl:hidden">
-      <EdenWaterfallFlow class="w-full h-full" :gap="49">
+    <div
+      v-if="dataCompleted"
+      class="box-border w-1200px flex-auto p-2rem <xl:(hidden) >2xl:(w-1440px)"
+    >
+      <EdenWaterfallFlow class="w-full h-full" :gap="21">
         <GlassCard v-for="(item_a, index_a) in articleList" :key="index_a" class="p-20px">
           <NSpace class="select-none">
             <div
@@ -421,17 +424,17 @@ const randomHEX = () => {
           <div class="markdown-body" v-html="item_a.markDown"></div>
           <div class="h-14px"></div>
           <div
-            class="w-full text-14px lh-21px select-none flex flex-row flex-wrap justify-between text-center"
+            class="w-full select-none flex flex-row flex-wrap justify-between text-center text-14px lh-35px"
           >
             <div class="break-keep">
               <div
-                class="inline-block vertical-top size-21px i-solar-document-add-line-duotone"
+                class="inline-block vertical-top size-21px my-7px i-solar-document-add-line-duotone"
               ></div>
               {{ item_a.timeEnd }}
             </div>
             <div class="break-keep">
               <div
-                class="inline-block vertical-top size-21px i-solar-document-medicine-line-duotone"
+                class="inline-block vertical-top size-21px my-7px i-solar-document-medicine-line-duotone"
               ></div>
               {{ item_a.timeStart }}
             </div>
@@ -451,17 +454,17 @@ const randomHEX = () => {
   </div>
   <!-- 搜索窗口 -->
   <NModal v-model:show="showSearch">
-    <div class="bg-theme p-2rem rd-7px border-solid border-1px w-62% max-w-1200px">
+    <div class="box-border bg-theme p-2rem rd-7px border-solid border-1px mx-5rem mt-14rem w-full">
       <NInputGroup>
         <n-input
-          @keyup.enter="search"
+          @keyup.enter="getData()"
           v-model:value="searchText"
           type="text"
           size="large"
           placeholder="我的建议是：不如Ctrl+F"
           clearable
         />
-        <NButton @click="search" type="primary" size="large" secondary>搜索</NButton>
+        <NButton @click="getData()" type="primary" size="large" secondary>搜索</NButton>
       </NInputGroup>
     </div>
   </NModal>

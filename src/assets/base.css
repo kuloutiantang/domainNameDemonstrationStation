@@ -67,7 +67,9 @@ body {
     color 0.5s,
     background-color 0.5s;
   line-height: 1.4;
-  font-family: 'Monotype Corsiva', 'MiSans VF', 'Smiley Sans', sans-serif, cursive;
+  /* 等宽->美化->标准 */
+  font-family: BlinkMacSystemFont, 'Maple Mono SC NF', 'MiSans VF', 'Smiley Sans',
+    'Monotype Corsiva', sans-serif, cursive;
   font-size: 15px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
