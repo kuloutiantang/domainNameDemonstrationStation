@@ -9,6 +9,7 @@ const colorG = ref(255)
 const colorB = ref(255)
 const count = ref(0)
 const targetColor = ref([255, 255, 255])
+const step = ref(2)
 
 onMounted(() => {
   initialColor()
@@ -121,14 +122,14 @@ const gradient = (c) => {
 
 const accumulation = () => {
   count.value++
-  if (count.value >= 7) {
+  if (count.value >= step.value) {
     count.value = 0
     // 跳转
     router.push('/understand')
   } else {
-    colorR.value += (targetColor.value[0] - colorR.value) * (1 / (7 - count.value))
-    colorG.value += (targetColor.value[1] - colorG.value) * (1 / (7 - count.value))
-    colorB.value += (targetColor.value[2] - colorB.value) * (1 / (7 - count.value))
+    colorR.value += (targetColor.value[0] - colorR.value) * (1 / (step.value - count.value))
+    colorG.value += (targetColor.value[1] - colorG.value) * (1 / (step.value - count.value))
+    colorB.value += (targetColor.value[2] - colorB.value) * (1 / (step.value - count.value))
   }
 }
 </script>
