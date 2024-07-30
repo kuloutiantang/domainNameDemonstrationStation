@@ -1,7 +1,8 @@
 <script setup>
-import GlassCard from '@/components/GlassCard.vue'
-import EdenWaterfallFlow from '@/components/EdenWaterfallFlow/EdenWaterfallFlow.vue'
 import { ref, onMounted, computed, toRaw, h } from 'vue'
+import axios from 'axios'
+
+// UI
 import { marked } from 'marked'
 import {
   NModal,
@@ -21,101 +22,19 @@ import {
 } from 'naive-ui'
 const dialog = useDialog()
 const message = useMessage()
-import axios from 'axios'
 
-const loginFormRef = ref(null) // 登录表单
-const articleFormRef = ref(null) // 文章表单
+// 文章列表
+import GlassCard from '@/components/GlassCard.vue'
+import EdenWaterfallFlow from '@/components/EdenWaterfallFlow/EdenWaterfallFlow.vue'
 
-const searchText = ref('') // 搜索框文本
 const dataCompleted = ref(false) // 数据是否加载完成
-const articleList = ref([]) // 知识碎片
-const showSearch = ref(false) // 搜索框开关
-const showEditor = ref(false) // 编辑框开关
-const editModal = ref(false) // 编辑模式
-const editId = ref(0) // 编辑模式下文章id
-const isLogin = ref('') // 是否登录
-const showLoginWindow = ref(false) // 登录窗口开关
-const loginFormData = ref({
-  email: '',
-  password: ''
-}) // 登录表单数据
-const articleFormData = ref({
-  tags: [],
-  content: ''
-})
-const loginFormRules = {
-  email: [
-    {
-      required: true,
-      message: '请输入邮箱',
-      trigger: ['blur', 'change', 'input']
-    },
-    {
-      trigger: ['blur', 'change', 'input'],
-      level: 'error',
-      validator(_rule, value) {
-        if (value.length > 30) {
-          return new Error('过长')
-        }
-        return true
-      }
-    }
-  ],
-  password: [
-    {
-      required: true,
-      message: '请输入密码',
-      trigger: ['blur', 'change', 'input']
-    },
-    {
-      trigger: ['blur', 'change', 'input'],
-      level: 'warning',
-      validator(_rule, value) {
-        if (value.length < 6) {
-          return new Error('码不是很密')
-        }
-        return true
-      }
-    },
-    {
-      trigger: ['blur', 'change', 'input'],
-      level: 'error',
-      validator(_rule, value) {
-        if (value.length > 16) {
-          return new Error('过长')
-        }
-        return true
-      }
-    }
-  ]
-} // 登录表单验证规则
-const articleFormRules = {
-  tags: {
-    trigger: ['change'],
-    validator(rule, value) {
-      if (value.length >= 7) return new Error('不得超过七个标签')
-      return true
-    }
-  }
-}
+const articleFormRef = ref(null) // 文章表单
+const articleList = ref([]) // 知识碎片/文章
 
-const emailOptions = computed(() => {
-  return ['@qq.com', '@gmail.com', '@163.com'].map((suffix) => {
-    const prefix = loginFormData.value['email'].split('@')[0]
-    return {
-      label: prefix + suffix,
-      value: prefix + suffix
-    }
-  })
-})
-
-onMounted(() => {
-  // 静默登录
-  autoLogin()
-  // 加载数据
-  getData(true)
-})
-
+/**
+ * 获取数据
+ * @param condition 是否强制刷新
+ */
 const getData = (condition = false) => {
   if (condition || dataCompleted.value) {
     if (condition) {
@@ -188,6 +107,79 @@ const formatTimestampToYmdHm = (timestamp, format = 'ymdhi') => {
     return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes
   }
 }
+
+// 搜索
+const showSearch = ref(false) // 搜索框开关
+const searchText = ref('') // 搜索框文本
+
+// 登录
+const showLoginWindow = ref(false) // 登录窗口开关
+const loginFormRef = ref(null) // 登录表单
+const isLogin = ref('') // 是否登录
+const loginFormData = ref({
+  email: '',
+  password: ''
+}) // 登录表单数据
+const loginFormRules = {
+  email: [
+    {
+      required: true,
+      message: '请输入邮箱',
+      trigger: ['blur', 'change', 'input']
+    },
+    {
+      trigger: ['blur', 'change', 'input'],
+      level: 'error',
+      validator(_rule, value) {
+        if (value.length > 30) {
+          return new Error('过长')
+        }
+        return true
+      }
+    }
+  ],
+  password: [
+    {
+      required: true,
+      message: '请输入密码',
+      trigger: ['blur', 'change', 'input']
+    },
+    {
+      trigger: ['blur', 'change', 'input'],
+      level: 'warning',
+      validator(_rule, value) {
+        if (value.length < 6) {
+          return new Error('码不是很密')
+        }
+        return true
+      }
+    },
+    {
+      trigger: ['blur', 'change', 'input'],
+      level: 'error',
+      validator(_rule, value) {
+        if (value.length > 16) {
+          return new Error('过长')
+        }
+        return true
+      }
+    }
+  ]
+} // 登录表单验证规则
+
+/**
+ * 邮箱后缀
+ */
+const emailOptions = computed(() => {
+  return ['@qq.com', '@gmail.com', '@163.com'].map((suffix) => {
+    const prefix = loginFormData.value['email'].split('@')[0]
+    return {
+      label: prefix + suffix,
+      value: prefix + suffix
+    }
+  })
+})
+
 /**
  * 显示登录窗口
  */
@@ -198,6 +190,9 @@ const toShowLoginWindow = () => {
     password: ''
   }
 }
+/**
+ * 自动登录
+ */
 const autoLogin = () => {
   let cookieUser = getCookie('user')
   if (cookieUser) {
@@ -276,6 +271,35 @@ const login = (data) => {
       return false
     })
 }
+/**
+ * 退出登录
+ */
+const logout = () => {
+  let expiresDelete = new Date()
+  document.cookie = 'user=; expires=' + expiresDelete
+  isLogin.value = ''
+}
+
+// 添加/编辑
+const editModal = ref(false) // 编辑模式
+const editId = ref(0) // 编辑模式下文章id
+const showEditor = ref(false) // 编辑框开关
+const articleFormData = ref({
+  tags: [],
+  content: ''
+})
+/**
+ * 文章表单验证规则
+ */
+const articleFormRules = {
+  tags: {
+    trigger: ['change'],
+    validator(rule, value) {
+      if (value.length >= 7) return new Error('不得超过七个标签')
+      return true
+    }
+  }
+} // 文章表单验证规则
 
 /**
  * 搜索标签
@@ -285,14 +309,6 @@ const searchTag = (tags) => {
   let text = ':' + tags
   searchText.value = text
   getData()
-}
-/**
- * 退出登录
- */
-const logout = () => {
-  let expiresDelete = new Date()
-  document.cookie = 'user=; expires=' + expiresDelete
-  isLogin.value = ''
 }
 /**
  * 显示编辑窗口
@@ -343,6 +359,10 @@ const articleSave = () => {
     }
   })
 }
+/**
+ * 删除文章
+ * @param item 文章
+ */
 const toDelete = (item) => {
   dialog.error({
     title: '警告',
@@ -356,6 +376,62 @@ const toDelete = (item) => {
     }
   })
 }
+
+// 留言
+const showMessageBoard = ref(false)
+const messageBoardText = ref('') // 留言板内容
+const showBoard = ref(false)
+
+/**
+ * 保存留言
+ */
+const leavingMessage = () => {
+  showMessageBoard.value = false
+  if (messageBoardText.value.length >= 10) {
+    let msgReactive = message.create('提交中...', {
+      type: 'loading',
+      duration: 10 * 1e3
+    })
+    axios
+      .post('http://phpapi.kuloutiantang.top/www/index/message', {
+        content: messageBoardText.value
+      })
+      .then(() => {
+        if (msgReactive) {
+          msgReactive.content = '留言提交成功'
+          msgReactive.type = 'success'
+          setTimeout(() => {
+            msgReactive.destroy()
+            msgReactive = null
+          }, 1e3)
+        }
+        messageBoardText.value = ''
+      })
+      .catch(() => {
+        if (msgReactive) {
+          msgReactive.content = '留言提交失败'
+          msgReactive.type = 'error'
+          setTimeout(() => {
+            msgReactive.destroy()
+            msgReactive = null
+          }, 1e3)
+        }
+      })
+  }
+}
+
+// 生命周期
+onMounted(() => {
+  // 静默登录
+  autoLogin()
+  // 加载数据
+  getData(true)
+})
+
+// 其他函数
+/**
+ * 随机HEX色值
+ */
 const randomHEX = () => {
   let r = Math.floor(Math.random() * 0xcf + 0x1f).toString(16)
   let g = Math.floor(Math.random() * 0xcf + 0x1f).toString(16)
@@ -380,7 +456,7 @@ const randomHEX = () => {
             <div class="h-full flex justify-center items-center">
               <span>{{ searchText }}</span>
             </div>
-            <NButton @click="showSearch = true" strong :type="isLogin ? 'info' : 'tertiary'"
+            <NButton @click.exact="showSearch = true" strong :type="isLogin ? 'info' : 'tertiary'"
               >搜索</NButton
             >
             <NButton v-if="isLogin != ''" @click="editModal = !editModal" strong type="warning"
@@ -391,6 +467,9 @@ const randomHEX = () => {
             >
             <NButton v-if="isLogin == ''" @click="toShowLoginWindow" strong type="tertiary"
               >登录</NButton
+            >
+            <NButton v-if="isLogin == ''" @click="showMessageBoard = true" strong type="tertiary"
+              >留言</NButton
             >
             <NButton v-if="isLogin != ''" @click="logout" strong type="error">退出</NButton>
             <div v-if="isLogin != ''" class="h-full flex justify-center items-center select-none">
@@ -526,6 +605,40 @@ const randomHEX = () => {
           >
         </NFormItem>
       </NForm>
+    </div>
+  </NModal>
+  <!-- 留言窗口 -->
+  <NModal v-model:show="showMessageBoard">
+    <div class="box-border bg-theme p-2rem rd-7px border-solid border-1px mx-7rem mt-7rem w-full">
+      <n-input
+        @keyup.shift.enter="leavingMessage()"
+        v-model:value="messageBoardText"
+        placeholder="至少10个字
+直接'Enter'换行，'Shift+Enter'提交
+可以是意见或建议
+或者也留一个知识碎片(Markdown格式)，我看见了说不定就摆上去"
+        type="textarea"
+        size="small"
+        :status="
+          messageBoardText.length == 0 ? 'none' : messageBoardText.length >= 10 ? 'none' : 'error'
+        "
+        :autosize="{
+          minRows: 7,
+          maxRows: 21
+        }"
+        clearable
+        show-count
+      />
+      <div class="h-14px"></div>
+      <NButton @click.once="leavingMessage()" class="w-full" type="primary" size="large" secondary
+        >提交留言(Shift+Enter)</NButton
+      >
+    </div>
+  </NModal>
+  <!-- 留言板 -->
+  <NModal v-model:show="showBoard">
+    <div class="box-border bg-theme p-2rem rd-7px border-solid border-1px m-7rem w-full h-max-50%">
+      123
     </div>
   </NModal>
 </template>

@@ -9,7 +9,7 @@ const colorG = ref(255)
 const colorB = ref(255)
 const count = ref(0)
 const targetColor = ref([255, 255, 255])
-const step = ref(2)
+const step = ref(3)
 
 onMounted(() => {
   initialColor()
