@@ -146,8 +146,11 @@ const accumulation = () => {
       />
     </div>
   </div>
-  <div class="bottom" :style="'color:rgb(' + colorR + ',' + colorG + ',' + colorB + ')'">
-    <VersionNumber :versionNumber="'鲁ICP备2022011940号-1'" />
+  <div class="bottom">
+    <VersionNumber
+      :versionNumber="'鲁ICP备2022011940号-1'"
+      :color="'rgb(' + colorR + ',' + colorG + ',' + colorB + ')'"
+    />
   </div>
 </template>
 
