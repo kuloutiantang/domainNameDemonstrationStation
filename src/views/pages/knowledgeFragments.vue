@@ -1,10 +1,18 @@
 <script setup>
 import { ref, onMounted, computed, toRaw, h } from 'vue'
 import axios from 'axios'
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+// 组件
+import GlassCard from '@/components/GlassCard.vue'
+import EdenWaterfallFlow from '@/components/EdenWaterfallFlow/EdenWaterfallFlow.vue'
 
 // 状态管理
 import { useUserStore } from '@/stores/user'
 const user = useUserStore()
+import { useColorStore } from '@/stores/color'
+const color = useColorStore()
 
 // UI
 import { marked } from 'marked'
@@ -28,9 +36,6 @@ const dialog = useDialog()
 const message = useMessage()
 
 // 文章列表
-import GlassCard from '@/components/GlassCard.vue'
-import EdenWaterfallFlow from '@/components/EdenWaterfallFlow/EdenWaterfallFlow.vue'
-
 const dataCompleted = ref(false) // 数据是否加载完成
 const articleFormRef = ref(null) // 文章表单
 const articleList = ref([]) // 知识碎片/文章
@@ -215,7 +220,7 @@ const userLogin = (data) => {
   user.login(
     data,
     () => {
-      message.create('欢迎 ' + user.user.value.email, {
+      message.create('欢迎 ' + data.email, {
         icon: () =>
           h('div', {
             style: 'color: #fc0',
@@ -224,7 +229,8 @@ const userLogin = (data) => {
         duration: 1400
       })
     },
-    () => {
+    (err) => {
+      console.log(err)
       message.warning('你怎么想的？', {
         icon: () =>
           h('div', {
@@ -378,6 +384,7 @@ const leavingMessage = () => {
 
 // 生命周期
 onMounted(() => {
+  !color.beReady && color.init()
   // 静默登录
   user.localUser()
   // 加载数据
@@ -403,8 +410,16 @@ const randomHEX = () => {
     >
       <NPageHeader class="w-1200px <xl:(w-full px-1rem)">
         <template #title>
-          <div class="fw-900 text-28px cursor-pointer select-none" @click="getData(true)">
-            知识碎片
+          <div class="flex flex-row justify-start items-center">
+            <div
+              @click="router.go(-1)"
+              class="cursor-pointer size-35px transition-777 i-solar-home-smile-bold-duotone"
+              :style="'color: ' + color.themeColor"
+            ></div>
+            <div class="w-21px"></div>
+            <div class="fw-900 text-28px lh-42px cursor-pointer select-none" @click="getData(true)">
+              知识碎片
+            </div>
           </div>
         </template>
         <template #extra>
