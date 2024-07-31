@@ -52,7 +52,7 @@ const initialColor = () => {
   if (isLight) {
     targetColor.value = [255, 255, 255]
   } else {
-    targetColor.value = [0, 0, 0]
+    targetColor.value = [13, 17, 23]
   }
 }
 /**
