@@ -2,6 +2,10 @@
 import { ref, onMounted, computed, toRaw, h } from 'vue'
 import axios from 'axios'
 
+// 状态管理
+import { useUserStore } from '@/stores/user'
+const user = useUserStore()
+
 // UI
 import { marked } from 'marked'
 import {
@@ -115,7 +119,6 @@ const searchText = ref('') // 搜索框文本
 // 登录
 const showLoginWindow = ref(false) // 登录窗口开关
 const loginFormRef = ref(null) // 登录表单
-const isLogin = ref('') // 是否登录
 const loginFormData = ref({
   email: '',
   password: ''
@@ -191,34 +194,6 @@ const toShowLoginWindow = () => {
   }
 }
 /**
- * 自动登录
- */
-const autoLogin = () => {
-  let cookieUser = getCookie('user')
-  if (cookieUser) {
-    let cookieUserArr = JSON.parse(cookieUser)
-    return login(cookieUserArr)
-  } else {
-    return false
-  }
-}
-/**
- * 获取cookie
- * @param name cookie名称
- */
-const getCookie = (name) => {
-  var strcookie = document.cookie //获取cookie字符串
-  var arrcookie = strcookie.split('; ') //分割
-  //遍历匹配
-  for (var i = 0; i < arrcookie.length; i++) {
-    var arr = arrcookie[i].split('=')
-    if (arr[0] == name) {
-      return arr[1]
-    }
-  }
-  return ''
-}
-/**
  * 登录按钮
  */
 const tryLogin = (e) => {
@@ -228,56 +203,37 @@ const tryLogin = (e) => {
       showLoginWindow.value = false
       let data = toRaw(loginFormData.value)
       // 登录
-      login(data)
+      userLogin(data)
     }
   })
 }
 /**
- * 登录
+ * 用户登录
  * @param data 登录数据
  */
-const login = (data) => {
-  axios
-    .post('http://phpapi.kuloutiantang.top/www/index/login', data)
-    .then((res) => {
-      if (res.data.code == 1) {
-        let expirationDate = new Date(new Date().setMonth(new Date().getMonth() + 1))
-        let userJson = JSON.stringify(data)
-        document.cookie = 'user=' + userJson + '; expires=' + expirationDate
-        isLogin.value = data.email
-        message.create('欢迎 ' + data.email, {
-          icon: () =>
-            h('div', {
-              style: 'color: #fc0',
-              class: 'i-solar-confetti-minimalistic-bold-duotone'
-            }),
-          duration: 1400
-        })
-        return true
-      } else {
-        message.warning('你怎么想的？', {
-          icon: () =>
-            h('div', {
-              class: 'i-solar-question-square-bold'
-            }),
-          duration: 3500
-        })
-        logout()
-        return false
-      }
-    })
-    .catch(() => {
-      logout()
-      return false
-    })
-}
-/**
- * 退出登录
- */
-const logout = () => {
-  let expiresDelete = new Date()
-  document.cookie = 'user=; expires=' + expiresDelete
-  isLogin.value = ''
+const userLogin = (data) => {
+  user.login(
+    data,
+    () => {
+      message.create('欢迎 ' + user.user.value.email, {
+        icon: () =>
+          h('div', {
+            style: 'color: #fc0',
+            class: 'i-solar-confetti-minimalistic-bold-duotone'
+          }),
+        duration: 1400
+      })
+    },
+    () => {
+      message.warning('你怎么想的？', {
+        icon: () =>
+          h('div', {
+            class: 'i-solar-question-square-bold'
+          }),
+        duration: 3500
+      })
+    }
+  )
 }
 
 // 添加/编辑
@@ -423,7 +379,7 @@ const leavingMessage = () => {
 // 生命周期
 onMounted(() => {
   // 静默登录
-  autoLogin()
+  user.localUser()
   // 加载数据
   getData(true)
 })
@@ -456,24 +412,27 @@ const randomHEX = () => {
             <div class="h-full flex justify-center items-center">
               <span>{{ searchText }}</span>
             </div>
-            <NButton @click.exact="showSearch = true" strong :type="isLogin ? 'info' : 'tertiary'"
+            <NButton
+              @click.exact="showSearch = true"
+              strong
+              :type="user.isLogin ? 'info' : 'tertiary'"
               >搜索</NButton
             >
-            <NButton v-if="isLogin != ''" @click="editModal = !editModal" strong type="warning"
+            <NButton v-if="user.isLogin" @click="editModal = !editModal" strong type="warning"
               >编辑</NButton
             >
-            <NButton v-if="isLogin != ''" @click="toShowEditor(0)" strong type="success"
+            <NButton v-if="user.isLogin" @click="toShowEditor(0)" strong type="success"
               >添加</NButton
             >
-            <NButton v-if="isLogin == ''" @click="toShowLoginWindow" strong type="tertiary"
+            <NButton v-if="!user.isLogin" @click="toShowLoginWindow" strong type="tertiary"
               >登录</NButton
             >
-            <NButton v-if="isLogin == ''" @click="showMessageBoard = true" strong type="tertiary"
+            <NButton v-if="!user.isLogin" @click="showMessageBoard = true" strong type="tertiary"
               >留言</NButton
             >
-            <NButton v-if="isLogin != ''" @click="logout" strong type="error">退出</NButton>
-            <div v-if="isLogin != ''" class="h-full flex justify-center items-center select-none">
-              <span>{{ isLogin }}</span>
+            <NButton v-if="user.isLogin" @click="user.logout()" strong type="error">退出</NButton>
+            <div v-if="user.isLogin" class="h-full flex justify-center items-center select-none">
+              <span>{{ user.user.email }}</span>
             </div>
           </NSpace>
         </template>
