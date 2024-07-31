@@ -60,8 +60,8 @@ const initialColor = () => {
  * @description 激活颜色渐变
  */
 const dynamicColors = () => {
-  let minTime = 7
-  let maxTime = 14
+  let minTime = 7 * ((100 * count.value) / step.value + 1)
+  let maxTime = 14 * ((100 * count.value) / step.value + 1)
   /**
    * 运算R
    */
