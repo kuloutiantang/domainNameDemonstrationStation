@@ -32,6 +32,8 @@ onMounted(() => {
   // 计算列宽
   itemWidth.value =
     (rootWidth.value - (numberOfColumns.value - column.value) * spacing.value) / column.value
+  // 处理链接标签
+  setAllLinksToOpenInNewTab()
 })
 onUpdated(() => {
   calculateSorting()
@@ -84,6 +86,15 @@ const findMinIndex = (arr) => {
  */
 const deleteSlot = () => {
   original.value.innerHTML = ''
+}
+
+const setAllLinksToOpenInNewTab = () => {
+  const links = document.querySelectorAll('a')
+  links.forEach((link) => {
+    if (!link.target) {
+      link.target = '_blank'
+    }
+  })
 }
 </script>
 
