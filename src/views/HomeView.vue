@@ -146,7 +146,11 @@ const accumulation = () => {
     class="mid"
     :style="'filter: drop-shadow(0 0 10vh rgb(' + colorR + ',' + colorG + ',' + colorB + '))'"
   >
-    <div class="select-none" @click="accumulation">
+    <div
+      class="select-none"
+      style="filter: drop-shadow(0 0 2px var(--color-background))"
+      @click="accumulation"
+    >
       <img
         :style="'filter: drop-shadow(0 100vh 0 rgb(' + colorR + ',' + colorG + ',' + colorB + '))'"
         src="/src/assets/logop.png"
@@ -169,12 +173,11 @@ const accumulation = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  > div {
+  & > div {
     position: relative;
     width: var(--edge-length);
     height: var(--edge-length);
-    filter: drop-shadow(0 0 2px rgb(0, 0, 0));
-    > img {
+    & > img {
       position: absolute;
       top: -100vh;
       width: var(--edge-length);
