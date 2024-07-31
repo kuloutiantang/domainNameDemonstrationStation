@@ -50,9 +50,9 @@ const initialColor = () => {
   // 获取系统颜色
   let isLight = window.matchMedia('(prefers-color-scheme: light)').matches
   if (isLight) {
-    targetColor.value = [0, 0, 0]
-  } else {
     targetColor.value = [255, 255, 255]
+  } else {
+    targetColor.value = [0, 0, 0]
   }
 }
 /**
