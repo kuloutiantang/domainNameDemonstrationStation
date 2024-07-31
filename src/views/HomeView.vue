@@ -1,15 +1,25 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import VersionNumber from '@/components/VersionNumber.vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
+
+const BLACK = [13, 17, 23]
+const WHITE = [255, 255, 255]
+const STEP = 3
 
 const colorR = ref(255)
 const colorG = ref(255)
 const colorB = ref(255)
 const count = ref(0)
 const targetColor = ref([255, 255, 255])
-const step = ref(3)
+
+const minTime = computed(() => {
+  return Math.round(7 * ((100 * count.value) / STEP + 1))
+})
+const maxTime = computed(() => {
+  return Math.round(2 * minTime.value)
+})
 
 onMounted(() => {
   initialColor()
@@ -49,10 +59,11 @@ const initialColor = () => {
   }
   // 获取系统颜色
   let isLight = window.matchMedia('(prefers-color-scheme: light)').matches
+  // 设置目标颜色
   if (isLight) {
-    targetColor.value = [255, 255, 255]
+    targetColor.value = WHITE
   } else {
-    targetColor.value = [13, 17, 23]
+    targetColor.value = BLACK
   }
 }
 /**
@@ -60,18 +71,16 @@ const initialColor = () => {
  * @description 激活颜色渐变
  */
 const dynamicColors = () => {
-  let minTime = 7 * ((100 * count.value) / step.value + 1)
-  let maxTime = 14 * ((100 * count.value) / step.value + 1)
   /**
    * 运算R
    */
   const dynamicR = () => {
     setTimeout(
       () => {
-        colorR.value = gradient(colorR.value)
+        colorR.value = gradient(colorR.value, BLACK[0], WHITE[0])
         dynamicR()
       },
-      Rand(minTime, maxTime)
+      Rand(minTime.value, maxTime.value)
     )
   }
   /**
@@ -80,10 +89,10 @@ const dynamicColors = () => {
   const dynamicG = () => {
     setTimeout(
       () => {
-        colorG.value = gradient(colorG.value)
+        colorG.value = gradient(colorG.value, BLACK[1], WHITE[1])
         dynamicG()
       },
-      Rand(minTime, maxTime)
+      Rand(minTime.value, maxTime.value)
     )
   }
   /**
@@ -92,10 +101,10 @@ const dynamicColors = () => {
   const dynamicB = () => {
     setTimeout(
       () => {
-        colorB.value = gradient(colorB.value)
+        colorB.value = gradient(colorB.value, BLACK[2], WHITE[2])
         dynamicB()
       },
-      Rand(minTime, maxTime)
+      Rand(minTime.value, maxTime.value)
     )
   }
   dynamicR()
@@ -118,25 +127,30 @@ const Rand = (min, max) => {
 /**
  * 色值渐变
  * @param c 色值
+ * @param min 最小值
+ * @param max 最大值
  * @returns {number}
  */
-const gradient = (c) => {
+const gradient = (c, min = 0, max = 255) => {
   c += Rand(-1, 1)
-  c = c < 0 ? 0 : c
-  c = c > 255 ? 255 : c
+  c = c < min ? min : c
+  c = c > max ? max : c
   return c
 }
 
+/**
+ * 点击
+ */
 const accumulation = () => {
   count.value++
-  if (count.value >= step.value) {
+  if (count.value >= STEP) {
     count.value = 0
     // 跳转
     router.push('/understand')
   } else {
-    colorR.value += (targetColor.value[0] - colorR.value) * (1 / (step.value - count.value))
-    colorG.value += (targetColor.value[1] - colorG.value) * (1 / (step.value - count.value))
-    colorB.value += (targetColor.value[2] - colorB.value) * (1 / (step.value - count.value))
+    colorR.value += (targetColor.value[0] - colorR.value) * (1 / (STEP - count.value))
+    colorG.value += (targetColor.value[1] - colorG.value) * (1 / (STEP - count.value))
+    colorB.value += (targetColor.value[2] - colorB.value) * (1 / (STEP - count.value))
   }
 }
 </script>
