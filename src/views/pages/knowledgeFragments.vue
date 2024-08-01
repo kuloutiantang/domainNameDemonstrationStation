@@ -36,6 +36,7 @@ const dialog = useDialog()
 const message = useMessage()
 
 // 文章列表
+import dayjs from 'dayjs'
 const dataCompleted = ref(false) // 数据是否加载完成
 const articleFormRef = ref(null) // 文章表单
 const articleList = ref([]) // 知识碎片/文章
@@ -75,8 +76,8 @@ const search = () => {
         for (let k = 0; k < res.data.data.length; k++) {
           const item = res.data.data[k]
           let newItem = { ...item }
-          newItem.timeStart = formatTimestampToYmdHm(item.createtime, 'ymd')
-          newItem.timeEnd = formatTimestampToYmdHm(item.updatetime, 'ymd')
+          newItem.timeStart = dayjs(item.createtime * 1000).format('YYYY-MM-DD')
+          newItem.timeEnd = dayjs(item.updatetime * 1000).format('YYYY-MM-DD')
           newItem.tagsArr = item.tags.split(',')
           newItem.markDown = marked.parse(item.content)
           list.push(newItem)
@@ -89,32 +90,6 @@ const search = () => {
     .catch(() => {
       dataCompleted.value = true
     })
-}
-/**
- * 格式化时间戳
- * @param timestamp 时间戳
- */
-const formatTimestampToYmdHm = (timestamp, format = 'ymdhi') => {
-  // 将秒级时间戳转换为毫秒级
-  var msTimestamp = timestamp * 1000
-  // 创建新的Date对象
-  var date = new Date(msTimestamp)
-  // 获取各个部分
-  var year = date.getFullYear()
-  var month = ('0' + (date.getMonth() + 1)).slice(-2) // 月份从0开始，所以加1
-  var day = ('0' + date.getDate()).slice(-2)
-  var hours = ('0' + date.getHours()).slice(-2)
-  var minutes = ('0' + date.getMinutes()).slice(-2)
-  var seconds = ('0' + date.getSeconds()).slice(-2)
-  // 返回格式化的字符串
-  if (format == 'ymdhis') {
-    return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds
-  } else if (format == 'ymd') {
-    return year + '-' + month + '-' + day
-  } else {
-    // 默认
-    return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes
-  }
 }
 
 // 搜索
