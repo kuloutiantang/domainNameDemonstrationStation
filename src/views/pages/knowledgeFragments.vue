@@ -359,7 +359,7 @@ const leavingMessage = () => {
 
 // 生命周期
 onMounted(() => {
-  !color.beReady && color.init()
+  !color.beReady && color.init(7)
   // 静默登录
   user.localUser()
   // 加载数据
@@ -484,7 +484,7 @@ const randomHEX = () => {
   <NModal v-model:show="showSearch">
     <div class="box-border bg-theme p-2rem rd-7px border-solid border-1px mx-5rem mt-14rem w-full">
       <NInputGroup>
-        <n-input
+        <NInput
           @keyup.enter="getData()"
           v-model:value="searchText"
           type="text"
