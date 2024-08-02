@@ -33,7 +33,7 @@ const accumulation = () => {
       <div class="w-full h-full flex justify-center items-center">
         <div
           @click="router.push('/understand')"
-          class="select-none text-140px cursor-pointer"
+          class="select-none text-7rem cursor-pointer"
           :style="{ color: 'var(--edge-theme-color)' }"
         >
           知识碎片

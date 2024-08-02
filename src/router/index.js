@@ -18,6 +18,14 @@ const router = createRouter({
       meta: {
         title: '知识碎片'
       }
+    },
+    {
+      path: '/chart',
+      name: '图表',
+      component: () => import('../views/pages/chartTesting.vue'),
+      meta: {
+        title: '图表测试'
+      }
     }
   ]
 })

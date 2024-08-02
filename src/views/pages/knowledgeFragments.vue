@@ -29,6 +29,7 @@ import {
   NFormItem,
   NDynamicTags,
   NDivider,
+  NAffix,
   useDialog,
   useMessage
 } from 'naive-ui'
@@ -380,10 +381,12 @@ const randomHEX = () => {
 <template>
   <!-- 正文 -->
   <div class="w-100vw h-100vh flex flex-col justify-start items-center">
-    <div
-      class="box-border bg-theme w-full py-14px flex flex-col justify-center items-center border-1px border-b-solid z-2"
+    <NAffix
+      :top="0"
+      :trigger-top="0"
+      class="box-border bg-theme w-full h-70px flex flex-col justify-center items-center border-1px border-b-solid z-2 <xl:(hidden)"
     >
-      <NPageHeader class="w-1200px <xl:(w-full px-1rem)">
+      <NPageHeader class="w-1200px">
         <template #title>
           <div class="flex flex-row justify-start items-center">
             <div
@@ -427,15 +430,16 @@ const randomHEX = () => {
           </NSpace>
         </template>
       </NPageHeader>
-    </div>
-    <div class="hidden <xl:(block w-full h-full flex justify-center items-center)">
+    </NAffix>
+    <div class="flex-auto hidden <xl:(block w-full h-full flex justify-center items-center)">
       <div class="i-solar-monitor-smartphone-bold-duotone size-50px"></div>
     </div>
     <div
       v-if="dataCompleted"
-      class="box-border w-1200px flex-auto p-2rem <xl:(hidden) >2xl:(w-1440px)"
+      class="flex-auto box-border w-1200px p-2rem <xl:(hidden) >2xl:(w-1440px)"
     >
-      <EdenWaterfallFlow class="w-full h-full" :gap="21">
+      <div class="h-70px"></div>
+      <EdenWaterfallFlow class="w-full" :gap="21">
         <GlassCard v-for="(item_a, index_a) in articleList" :key="index_a" class="p-20px">
           <NSpace class="select-none">
             <div
