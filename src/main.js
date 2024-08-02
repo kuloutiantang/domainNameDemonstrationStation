@@ -1,5 +1,5 @@
-import 'github-markdown-css'
-import './assets/main.css'
+import 'github-markdown-css' // 引入markdown样式
+import './assets/main.css' // 引入项目全局样式
 
 import 'virtual:uno.css' // 引入unocss
 
