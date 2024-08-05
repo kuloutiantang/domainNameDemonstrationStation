@@ -26,6 +26,14 @@ const router = createRouter({
       meta: {
         title: '图表测试'
       }
+    },
+    {
+      path: '/ws',
+      name: 'WebSocket',
+      component: () => import('../views/pages/wsTesting.vue'),
+      meta: {
+        title: 'Socket.io测试'
+      }
     }
   ]
 })
