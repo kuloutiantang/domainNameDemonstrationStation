@@ -24,7 +24,7 @@ const router = createRouter({
       name: '图表',
       component: () => import('../views/pages/chartTesting.vue'),
       meta: {
-        title: '图表测试'
+        title: '图表示例'
       }
     },
     {
@@ -32,7 +32,7 @@ const router = createRouter({
       name: 'WebSocket',
       component: () => import('../views/pages/wsTesting.vue'),
       meta: {
-        title: 'Socket.io测试'
+        title: 'WebSocket示例'
       }
     }
   ]

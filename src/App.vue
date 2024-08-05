@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { RouterView } from 'vue-router'
-import { useOsTheme, darkTheme, NConfigProvider, NDialogProvider, NMessageProvider } from 'naive-ui'
+import { useOsTheme, darkTheme } from 'naive-ui'
 const osThemeRef = useOsTheme()
 const theme = computed(() => (osThemeRef.value === 'dark' ? darkTheme : null))
 </script>

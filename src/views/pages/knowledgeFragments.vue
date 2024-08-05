@@ -16,23 +16,7 @@ const color = useColorStore()
 
 // UI
 import { marked } from 'marked'
-import {
-  NModal,
-  NInputGroup,
-  NInput,
-  NButton,
-  NSpace,
-  NTag,
-  NPageHeader,
-  NAutoComplete,
-  NForm,
-  NFormItem,
-  NDynamicTags,
-  NDivider,
-  NAffix,
-  useDialog,
-  useMessage
-} from 'naive-ui'
+import { useDialog, useMessage } from 'naive-ui'
 const dialog = useDialog()
 const message = useMessage()
 
@@ -381,12 +365,12 @@ const randomHEX = () => {
 <template>
   <!-- 正文 -->
   <div class="w-100vw h-100vh flex flex-col justify-start items-center">
-    <NAffix
+    <n-affix
       :top="0"
       :trigger-top="0"
       class="box-border bg-theme w-full h-70px flex flex-col justify-center items-center border-1px border-b-solid z-2 <xl:(hidden)"
     >
-      <NPageHeader class="w-1200px">
+      <n-page-header class="w-1200px">
         <template #title>
           <div class="flex flex-row justify-start items-center">
             <div
@@ -401,36 +385,36 @@ const randomHEX = () => {
           </div>
         </template>
         <template #extra>
-          <NSpace>
+          <n-space>
             <div class="h-full flex justify-center items-center">
               <span>{{ searchText }}</span>
             </div>
-            <NButton
+            <n-button
               @click.exact="showSearch = true"
               strong
               :type="user.isLogin ? 'info' : 'tertiary'"
-              >搜索</NButton
+              >搜索</n-button
             >
-            <NButton v-if="user.isLogin" @click="editModal = !editModal" strong type="warning"
-              >编辑</NButton
+            <n-button v-if="user.isLogin" @click="editModal = !editModal" strong type="warning"
+              >编辑</n-button
             >
-            <NButton v-if="user.isLogin" @click="toShowEditor(0)" strong type="success"
-              >添加</NButton
+            <n-button v-if="user.isLogin" @click="toShowEditor(0)" strong type="success"
+              >添加</n-button
             >
-            <NButton v-if="!user.isLogin" @click="toShowLoginWindow" strong type="tertiary"
-              >登录</NButton
+            <n-button v-if="!user.isLogin" @click="toShowLoginWindow" strong type="tertiary"
+              >登录</n-button
             >
-            <NButton v-if="!user.isLogin" @click="showMessageBoard = true" strong type="tertiary"
-              >留言</NButton
+            <n-button v-if="!user.isLogin" @click="showMessageBoard = true" strong type="tertiary"
+              >留言</n-button
             >
-            <NButton v-if="user.isLogin" @click="user.logout()" strong type="error">退出</NButton>
+            <n-button v-if="user.isLogin" @click="user.logout()" strong type="error">退出</n-button>
             <div v-if="user.isLogin" class="h-full flex justify-center items-center select-none">
               <span>{{ user.user.email }}</span>
             </div>
-          </NSpace>
+          </n-space>
         </template>
-      </NPageHeader>
-    </NAffix>
+      </n-page-header>
+    </n-affix>
     <div class="flex-auto hidden <xl:(block w-full h-full flex justify-center items-center)">
       <div class="i-solar-monitor-smartphone-bold-duotone size-50px"></div>
     </div>
@@ -441,17 +425,17 @@ const randomHEX = () => {
       <div class="h-70px"></div>
       <EdenWaterfallFlow class="w-full" :gap="21">
         <GlassCard v-for="(item_a, index_a) in articleList" :key="index_a" class="p-20px">
-          <NSpace class="select-none">
+          <n-space class="select-none">
             <div
               v-for="(item_a_ta, index_a_ta) in item_a.tagsArr"
               :key="index_a_ta"
               @click="searchTag(item_a_ta)"
             >
-              <NTag round class="cursor-pointer" :color="{ color: randomHEX() + '22' }">
+              <n-tag round class="cursor-pointer" :color="{ color: randomHEX() + '22' }">
                 {{ item_a_ta }}
-              </NTag>
+              </n-tag>
             </div>
-          </NSpace>
+          </n-space>
           <div class="h-7px"></div>
           <div class="markdown-body" v-html="item_a.markDown"></div>
           <div class="h-14px"></div>
@@ -473,11 +457,11 @@ const randomHEX = () => {
           </div>
           <div v-if="editModal" class="w-full">
             <div class="h-7px"></div>
-            <NDivider />
-            <NSpace>
-              <NButton @click="toShowEditor(item_a)" type="success">编辑</NButton>
-              <NButton @click="toDelete(item_a)" type="error">删除</NButton>
-            </NSpace>
+            <n-divider />
+            <n-space>
+              <n-button @click="toShowEditor(item_a)" type="success">编辑</n-button>
+              <n-button @click="toDelete(item_a)" type="error">删除</n-button>
+            </n-space>
             <div class="h-7px"></div>
           </div>
         </GlassCard>
@@ -485,10 +469,10 @@ const randomHEX = () => {
     </div>
   </div>
   <!-- 搜索窗口 -->
-  <NModal v-model:show="showSearch">
+  <n-modal v-model:show="showSearch">
     <div class="box-border bg-theme p-2rem rd-7px border-solid border-1px mx-5rem mt-14rem w-full">
-      <NInputGroup>
-        <NInput
+      <n-input-group>
+        <n-input
           @keyup.enter="getData()"
           v-model:value="searchText"
           type="text"
@@ -496,52 +480,52 @@ const randomHEX = () => {
           placeholder="我的建议是：不如Ctrl+F"
           clearable
         />
-        <NButton @click="getData()" type="primary" size="large" secondary>搜索</NButton>
-      </NInputGroup>
+        <n-button @click="getData()" type="primary" size="large" secondary>搜索</n-button>
+      </n-input-group>
     </div>
-  </NModal>
+  </n-modal>
   <!-- 登录窗口 -->
-  <NModal v-model:show="showLoginWindow">
+  <n-modal v-model:show="showLoginWindow">
     <div class="bg-theme p-3rem rd-7px border-solid border-1px max-w-1200px">
-      <NForm
+      <n-form
         @keyup.enter="tryLogin"
         ref="loginFormRef"
         :model="loginFormData"
         :rules="loginFormRules"
         size="large"
       >
-        <NFormItem label="登录邮箱" path="email">
-          <NAutoComplete
+        <n-form-item label="登录邮箱" path="email">
+          <n-auto-complete
             tabindex="2"
             v-model:value="loginFormData.email"
             :options="emailOptions"
             placeholder="邮箱"
           />
-        </NFormItem>
-        <NFormItem label="密码" path="password">
-          <NInput v-model:value="loginFormData.password" type="password" placeholder="密码" />
-        </NFormItem>
-        <NFormItem label=" ">
-          <NButton @click="tryLogin" class="w-full" attr-type="button">登录</NButton>
-        </NFormItem>
-      </NForm>
+        </n-form-item>
+        <n-form-item label="密码" path="password">
+          <n-input v-model:value="loginFormData.password" type="password" placeholder="密码" />
+        </n-form-item>
+        <n-form-item label=" ">
+          <n-button @click="tryLogin" class="w-full" attr-type="button">登录</n-button>
+        </n-form-item>
+      </n-form>
     </div>
-  </NModal>
+  </n-modal>
   <!-- 编辑窗口 -->
-  <NModal v-model:show="showEditor">
+  <n-modal v-model:show="showEditor">
     <div class="bg-theme p-3rem rd-7px border-solid border-1px max-w-1200px">
-      <NForm
+      <n-form
         ref="articleFormRef"
         :model="articleFormData"
         :rules="articleFormRules"
         size="large"
         class="min-w-600px"
       >
-        <NFormItem label="标签" path="tags">
-          <NDynamicTags v-model:value="articleFormData.tags" size="large" />
-        </NFormItem>
-        <NFormItem label="内容" path="content">
-          <NInput
+        <n-form-item label="标签" path="tags">
+          <n-dynamic-tags v-model:value="articleFormData.tags" size="large" />
+        </n-form-item>
+        <n-form-item label="内容" path="content">
+          <n-input
             v-model:value="articleFormData.content"
             placeholder="内容"
             type="textarea"
@@ -551,17 +535,17 @@ const randomHEX = () => {
               maxRows: 14
             }"
           />
-        </NFormItem>
-        <NFormItem label=" ">
-          <NButton @click="articleSave" class="w-full" attr-type="button" type="success"
-            >保存</NButton
+        </n-form-item>
+        <n-form-item label=" ">
+          <n-button @click="articleSave" class="w-full" attr-type="button" type="success"
+            >保存</n-button
           >
-        </NFormItem>
-      </NForm>
+        </n-form-item>
+      </n-form>
     </div>
-  </NModal>
+  </n-modal>
   <!-- 留言窗口 -->
-  <NModal v-model:show="showMessageBoard">
+  <n-modal v-model:show="showMessageBoard">
     <div class="box-border bg-theme p-2rem rd-7px border-solid border-1px mx-7rem mt-7rem w-full">
       <n-input
         @keyup.shift.enter="leavingMessage()"
@@ -583,21 +567,15 @@ const randomHEX = () => {
         show-count
       />
       <div class="h-14px"></div>
-      <NButton @click.once="leavingMessage()" class="w-full" type="primary" size="large" secondary
-        >提交留言(Shift+Enter)</NButton
+      <n-button @click.once="leavingMessage()" class="w-full" type="primary" size="large" secondary
+        >提交留言(Shift+Enter)</n-button
       >
     </div>
-  </NModal>
+  </n-modal>
   <!-- 留言板 -->
-  <NModal v-model:show="showBoard">
+  <n-modal v-model:show="showBoard">
     <div class="box-border bg-theme p-2rem rd-7px border-solid border-1px m-7rem w-full h-max-50%">
       123
     </div>
-  </NModal>
+  </n-modal>
 </template>
-<style scoped>
-div > span > a > p {
-  cursor: default;
-  user-select: none;
-}
-</style>

@@ -5,7 +5,6 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 import { useColorStore } from '@/stores/color'
 const color = useColorStore()
-import { NCarousel } from 'naive-ui'
 
 onMounted(() => {
   !color.beReady && color.init(7)
@@ -24,7 +23,7 @@ const accumulation = () => {
 
 <template>
   <div :style="'--edge-theme-color: ' + color.themeColor + ';'">
-    <NCarousel class="w-100vw h-100vh" direction="vertical" mousewheel>
+    <n-carousel class="w-100vw h-100vh" direction="vertical" mousewheel>
       <div class="w-full h-full mid">
         <div @click="accumulation" class="select-none">
           <img src="/src/assets/logop.png" />
@@ -52,7 +51,7 @@ const accumulation = () => {
           />
         </ul>
       </template>
-    </NCarousel>
+    </n-carousel>
     <div class="bottom">
       <VersionNumber :versionNumber="'鲁ICP备2022011940号-1'" :color="color.themeColor" />
     </div>
