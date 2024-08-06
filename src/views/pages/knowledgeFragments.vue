@@ -49,26 +49,28 @@ const getData = (condition = false) => {
  */
 const search = () => {
   dataCompleted.value = false
-  let text = ''
+  let text = '?limit=0'
   if (searchText.value.length > 0) {
-    text = '?text=' + searchText.value
+    text = '?limit=0&q=' + searchText.value
   }
   axios
-    .get('http://phpapi.kuloutiantang.top/www/index/article' + text)
+    .get('http://nodeapi.kuloutiantang.top/www/article' + text)
     .then((res) => {
-      if (res.data.code > 0 && res.data.code < 500) {
+      if (res.status == 200) {
         let list = []
-        for (let k = 0; k < res.data.data.length; k++) {
-          const item = res.data.data[k]
+        for (let k = 0; k < res.data.length; k++) {
+          const item = res.data[k]
           let newItem = { ...item }
-          newItem.timeStart = dayjs(item.createtime * 1000).format('YYYY-MM-DD')
-          newItem.timeEnd = dayjs(item.updatetime * 1000).format('YYYY-MM-DD')
+          newItem.timeStart = dayjs(item.createdate).format('YYYY-MM-DD')
+          newItem.timeEnd = dayjs(item.updatedate).format('YYYY-MM-DD')
           newItem.tagsArr = item.tags.split(',')
           newItem.markDown = marked.parse(item.content)
           list.push(newItem)
         }
         articleList.value = list
         showSearch.value = false
+        dataCompleted.value = true
+      } else {
         dataCompleted.value = true
       }
     })
@@ -179,7 +181,8 @@ const tryLogin = (e) => {
 const userLogin = (data) => {
   user.login(
     data,
-    () => {
+    (res) => {
+      console.log(res)
       message.create('欢迎 ' + data.email, {
         icon: () =>
           h('div', {
@@ -262,19 +265,18 @@ const articleSave = () => {
     if (!errors) {
       if (editModal.value) {
         let data = {
-          tags: JSON.parse(JSON.stringify(articleFormData.value.tags)),
+          tags: articleFormData.value.tags.join(','),
           content: articleFormData.value.content
         }
-        data.tags = data.tags.join(',')
-        axios
-          .put('http://phpapi.kuloutiantang.top/www/index/article?id=' + editId.value, data)
-          .then(() => {
-            getData()
-          })
+        axios.put('http://nodeapi.kuloutiantang.top/www/article/' + editId.value, data).then(() => {
+          getData()
+        })
       } else {
-        let data = toRaw(articleFormData.value)
-        data.tags = data.tags.join(',')
-        axios.post('http://phpapi.kuloutiantang.top/www/index/article', data).then(() => {
+        let data = {
+          tags: articleFormData.value.tags.join(','),
+          content: articleFormData.value.content
+        }
+        axios.post('http://nodeapi.kuloutiantang.top/www/article', data).then(() => {
           getData()
         })
       }
@@ -292,7 +294,7 @@ const toDelete = (item) => {
     positiveText: '确认删除',
     negativeText: '返回',
     onPositiveClick: () => {
-      axios.delete('http://phpapi.kuloutiantang.top/www/index/article?id=' + item.id).then(() => {
+      axios.delete('http://nodeapi.kuloutiantang.top/www/article/' + item.id).then(() => {
         getData()
       })
     }
@@ -315,7 +317,7 @@ const leavingMessage = () => {
       duration: 10 * 1e3
     })
     axios
-      .post('http://phpapi.kuloutiantang.top/www/index/message', {
+      .post('http://nodeapi.kuloutiantang.top/www/message', {
         content: messageBoardText.value
       })
       .then(() => {

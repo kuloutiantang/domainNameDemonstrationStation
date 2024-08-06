@@ -14,7 +14,7 @@ const connect = () => {
     ws.value = null
   }
   // 原生websocket
-  ws.value = new WebSocket('ws://nestadmin.kuloutiantang.top/')
+  ws.value = new WebSocket('ws://nodeapi.kuloutiantang.top/')
   // 监听连接
   ws.value.onopen = function (evt) {
     console.log(evt)

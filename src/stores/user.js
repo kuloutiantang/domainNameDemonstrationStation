@@ -13,8 +13,7 @@ export const useUserStore = defineStore('user', () => {
   function set(object) {
     user.value = object
     let expirationDate = new Date(new Date().setMonth(new Date().getMonth() + 1))
-    let userJson = JSON.stringify(object)
-    document.cookie = 'user=' + userJson + ';expires=' + expirationDate
+    document.cookie = 'token=' + object.token + ';expires=' + expirationDate
     isLogin.value = true
   }
   /**
@@ -22,10 +21,22 @@ export const useUserStore = defineStore('user', () => {
    * @returns boolean 是否存在
    */
   function localUser() {
-    let cookieUser = getCookie('user')
-    if (cookieUser) {
-      user.value = JSON.parse(cookieUser)
-      isLogin.value = true
+    let cookieToken = getCookie('token')
+    if (cookieToken) {
+      axios
+        .get('http://nodeapi.kuloutiantang.top/www/user/token', {
+          headers: {
+            Authorization: cookieToken
+          }
+        })
+        .then((res) => {
+          set(res.data)
+          isLogin.value = true
+        })
+        .catch(() => {
+          user.value = {}
+          isLogin.value = false
+        })
     } else {
       user.value = {}
       isLogin.value = false
@@ -40,10 +51,10 @@ export const useUserStore = defineStore('user', () => {
    */
   const login = (data, success, error) => {
     axios
-      .post('http://phpapi.kuloutiantang.top/www/index/login', data)
+      .put('http://nodeapi.kuloutiantang.top/www/user/email', data)
       .then((res) => {
-        if (res.data.code == 1) {
-          set(data)
+        if (res.request.status == 200) {
+          set(res.data)
           success(res)
           return true
         } else {
@@ -64,7 +75,7 @@ export const useUserStore = defineStore('user', () => {
    */
   function logout() {
     user.value = {}
-    document.cookie = 'user=;expires=' + new Date(0)
+    document.cookie = 'token=;expires=' + new Date(0)
     isLogin.value = false
     return true
   }
