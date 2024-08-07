@@ -40,9 +40,8 @@ const calculateData = () => {
   // 间距
   spacing.value = props.gap
   // 计算列宽
-  let theItemWidth =
+  itemWidth.value =
     (rootWidth.value - (numberOfColumns.value - column.value) * spacing.value) / column.value
-  itemWidth.value = theItemWidth > 0 ? theItemWidth : 100
 }
 
 /**

@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, computed, toRaw, h } from 'vue'
+import { ref, watch, onMounted, computed, toRaw, h } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 const router = useRouter()
+import numeral from 'numeral'
 
 // 组件
 import GlassCard from '@/components/GlassCard.vue'
@@ -323,6 +324,9 @@ const messageColumns = ref([
 const messageData = ref([])
 const messageMaxPage = ref(10)
 const messagePage = ref(1)
+watch(messagePage, async () => {
+  getMessage()
+})
 
 /**
  * 保存留言
@@ -366,15 +370,16 @@ const leavingMessage = () => {
  * 获取留言
  */
 const getMessage = () => {
-  messageData.value = []
   axios
     .get('http://nodeapi.kuloutiantang.top/www/message?page=' + messagePage.value)
     .then((res) => {
+      messageData.value = []
       res.data.list.map((item) => {
+        item.id = numeral(item.id).format('000')
         item.updatedate = dayjs(item.updatedate).format('YYYY-MM-DD HH:mm:ss')
       })
       messageData.value = res.data.list
-      messageMaxPage.value = res.data.count
+      messageMaxPage.value = res.data.maxpage
     })
 }
 
@@ -621,7 +626,7 @@ const randomHEX = () => {
     <div
       class="box-border bg-theme p-2rem rd-7px border-solid border-1px mx-7rem w-full max-h-90vh overflow-y-auto"
     >
-      <n-button quaternary> 留言板 </n-button>
+      <n-button quaternary>留言板</n-button>
       <div class="h-21px"></div>
       <n-data-table
         :columns="messageColumns"
@@ -630,7 +635,7 @@ const randomHEX = () => {
         :single-line="false"
       />
       <div class="h-21px"></div>
-      <div v-if="messageMaxPage > 1" class="flex justify-center">
+      <div v-show="messageMaxPage > 1" class="flex justify-center">
         <n-pagination v-model:page="messagePage" :page-count="messageMaxPage" size="large" />
       </div>
     </div>
