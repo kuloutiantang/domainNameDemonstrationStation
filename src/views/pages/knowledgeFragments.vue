@@ -415,6 +415,7 @@ const randomHEX = () => {
       :top="0"
       :trigger-top="0"
       class="box-border bg-theme w-full h-70px flex flex-col justify-center items-center border-1px border-b-solid z-2 <xl:(hidden)"
+      :style="'color: ' + color.themeColor"
     >
       <n-page-header class="w-1200px">
         <template #title>
@@ -425,7 +426,11 @@ const randomHEX = () => {
               :style="'color: ' + color.themeColor"
             ></div>
             <div class="w-21px"></div>
-            <div class="fw-900 text-28px lh-42px cursor-pointer select-none" @click="getData(true)">
+            <div
+              class="fw-900 text-28px lh-42px cursor-pointer select-none"
+              :style="'color: ' + color.themeColor"
+              @click="getData(true)"
+            >
               知识碎片
             </div>
           </div>
