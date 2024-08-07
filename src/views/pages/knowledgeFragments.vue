@@ -410,10 +410,7 @@ const randomHEX = () => {
 </script>
 <template>
   <!-- 正文 -->
-  <div
-    class="w-100vw h-100vh flex flex-col justify-start items-center"
-    :style="'--fgColor-accent: ' + color.themeColor"
-  >
+  <div class="w-100vw h-100vh flex flex-col justify-start items-center">
     <n-affix
       :top="0"
       :trigger-top="0"
@@ -494,7 +491,11 @@ const randomHEX = () => {
             </div>
           </n-space>
           <div class="h-7px"></div>
-          <div class="markdown-body" v-html="item_a.markDown"></div>
+          <div
+            class="markdown-body"
+            :style="'--fgColor-accent: ' + color.themeColor"
+            v-html="item_a.markDown"
+          ></div>
           <div class="h-14px"></div>
           <div
             class="w-full select-none flex flex-row flex-wrap justify-between text-center text-14px lh-35px"
