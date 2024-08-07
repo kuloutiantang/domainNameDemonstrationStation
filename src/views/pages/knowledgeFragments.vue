@@ -181,8 +181,7 @@ const tryLogin = (e) => {
 const userLogin = (data) => {
   user.login(
     data,
-    (res) => {
-      console.log(res)
+    () => {
       message.create('欢迎 ' + data.email, {
         icon: () =>
           h('div', {
@@ -192,8 +191,7 @@ const userLogin = (data) => {
         duration: 1400
       })
     },
-    (err) => {
-      console.log(err)
+    () => {
       message.warning('你怎么想的？', {
         icon: () =>
           h('div', {
@@ -372,7 +370,6 @@ const getMessage = () => {
   axios
     .get('http://nodeapi.kuloutiantang.top/www/message?page=' + messagePage.value)
     .then((res) => {
-      console.log(res)
       res.data.list.map((item) => {
         item.updatedate = dayjs(item.updatedate).format('YYYY-MM-DD HH:mm:ss')
       })
@@ -624,7 +621,7 @@ const randomHEX = () => {
     <div
       class="box-border bg-theme p-2rem rd-7px border-solid border-1px mx-7rem w-full max-h-90vh overflow-y-auto"
     >
-      <div class="text-21px">留言板</div>
+      <n-button quaternary> 留言板 </n-button>
       <div class="h-21px"></div>
       <n-data-table
         :columns="messageColumns"
@@ -633,7 +630,7 @@ const randomHEX = () => {
         :single-line="false"
       />
       <div class="h-21px"></div>
-      <div class="flex justify-center">
+      <div v-if="messageMaxPage > 1" class="flex justify-center">
         <n-pagination v-model:page="messagePage" :page-count="messageMaxPage" size="large" />
       </div>
     </div>
