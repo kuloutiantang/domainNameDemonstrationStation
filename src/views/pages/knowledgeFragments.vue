@@ -410,7 +410,10 @@ const randomHEX = () => {
 </script>
 <template>
   <!-- 正文 -->
-  <div class="w-100vw h-100vh flex flex-col justify-start items-center">
+  <div
+    class="w-100vw h-100vh flex flex-col justify-start items-center"
+    :style="'--fgColor-accent: ' + color.themeColor"
+  >
     <n-affix
       :top="0"
       :trigger-top="0"
