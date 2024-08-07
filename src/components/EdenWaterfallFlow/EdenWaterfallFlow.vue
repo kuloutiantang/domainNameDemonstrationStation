@@ -22,22 +22,28 @@ const spacing = ref(0) // 间距
 const itemWidth = ref(0) // 元素宽度
 
 onMounted(() => {
-  // 列数
-  column.value = props.col
-  numberOfColumns.value = props.col * 2 - 1
-  // 根元素宽度
-  rootWidth.value = shows.value.offsetWidth
-  // 间距
-  spacing.value = props.gap
-  // 计算列宽
-  itemWidth.value =
-    (rootWidth.value - (numberOfColumns.value - column.value) * spacing.value) / column.value
+  // 计算数据
+  calculateData()
   // 处理链接标签
   setAllLinksToOpenInNewTab()
 })
 onUpdated(() => {
   calculateSorting()
 })
+
+const calculateData = () => {
+  // 列数
+  column.value = props.col
+  numberOfColumns.value = props.col * 2 - 1
+  // 根元素宽度
+  rootWidth.value = shows.value.offsetWidth >= 1200 ? 1200 : shows.value.offsetWidth
+  // 间距
+  spacing.value = props.gap
+  // 计算列宽
+  let theItemWidth =
+    (rootWidth.value - (numberOfColumns.value - column.value) * spacing.value) / column.value
+  itemWidth.value = theItemWidth > 0 ? theItemWidth : 100
+}
 
 /**
  * 刷新
@@ -63,7 +69,7 @@ const calculateSorting = async () => {
   }
   // 插入
   for (let index = 0; index < times; index++) {
-    newNode[2 * oldNode[0].align] && newNode[2 * oldNode[0].align].appendChild(oldNode[0])
+    newNode[2 * oldNode[0].align] && (await newNode[2 * oldNode[0].align].appendChild(oldNode[0]))
   }
   await nextTick()
   deleteSlot()

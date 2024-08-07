@@ -30,7 +30,7 @@ const articleList = ref([]) // 知识碎片/文章
  * 获取数据
  * @param condition 是否强制刷新
  */
-const getData = (condition = false) => {
+const getData = async (condition = false) => {
   if (condition || dataCompleted.value) {
     if (condition) {
       searchText.value = ''
@@ -39,7 +39,7 @@ const getData = (condition = false) => {
     showEditor.value = false
     editModal.value = false
     // 获取知识碎片
-    search()
+    await search()
   } else {
     message.info('数据加载中')
   }
@@ -47,13 +47,13 @@ const getData = (condition = false) => {
 /**
  * 搜索获取知识碎片
  */
-const search = () => {
+const search = async () => {
   dataCompleted.value = false
   let text = '?limit=0'
   if (searchText.value.length > 0) {
     text = '?limit=0&q=' + searchText.value
   }
-  axios
+  await axios
     .get('http://nodeapi.kuloutiantang.top/www/article' + text)
     .then((res) => {
       if (res.status == 200) {
