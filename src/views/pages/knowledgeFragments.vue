@@ -304,7 +304,27 @@ const toDelete = (item) => {
 // 留言
 const showMessageBoard = ref(false)
 const messageBoardText = ref('') // 留言板内容
-const showBoard = ref(false)
+const showAllMessage = ref(false)
+const messageColumns = ref([
+  {
+    title: 'No',
+    key: 'id',
+    width: 70
+  },
+  {
+    title: '内容',
+    key: 'content',
+    minWidth: 200
+  },
+  {
+    title: '时间',
+    key: 'updatedate',
+    width: 210
+  }
+])
+const messageData = ref([])
+const messageMaxPage = ref(10)
+const messagePage = ref(1)
 
 /**
  * 保存留言
@@ -342,6 +362,28 @@ const leavingMessage = () => {
         }
       })
   }
+}
+
+/**
+ * 获取留言
+ */
+const getMessage = () => {
+  messageData.value = []
+  axios
+    .get('http://nodeapi.kuloutiantang.top/www/message?page=' + messagePage.value)
+    .then((res) => {
+      console.log(res)
+      res.data.list.map((item) => {
+        item.updatedate = dayjs(item.updatedate).format('YYYY-MM-DD HH:mm:ss')
+      })
+      messageData.value = res.data.list
+      messageMaxPage.value = res.data.count
+    })
+}
+
+const displayMessage = () => {
+  showAllMessage.value = true
+  getMessage()
 }
 
 // 生命周期
@@ -407,6 +449,9 @@ const randomHEX = () => {
               >登录</n-button
             >
             <n-button v-if="!user.isLogin" @click="showMessageBoard = true" strong type="tertiary"
+              >留言</n-button
+            >
+            <n-button v-if="user.isLogin" @click="displayMessage()" strong type="info"
               >留言</n-button
             >
             <n-button v-if="user.isLogin" @click="user.logout()" strong type="error">退出</n-button>
@@ -575,9 +620,22 @@ const randomHEX = () => {
     </div>
   </n-modal>
   <!-- 留言板 -->
-  <n-modal v-model:show="showBoard">
-    <div class="box-border bg-theme p-2rem rd-7px border-solid border-1px m-7rem w-full h-max-50%">
-      123
+  <n-modal v-model:show="showAllMessage">
+    <div
+      class="box-border bg-theme p-2rem rd-7px border-solid border-1px mx-7rem w-full max-h-90vh overflow-y-auto"
+    >
+      <div class="text-21px">留言板</div>
+      <div class="h-21px"></div>
+      <n-data-table
+        :columns="messageColumns"
+        :data="messageData"
+        :bordered="false"
+        :single-line="false"
+      />
+      <div class="h-21px"></div>
+      <div class="flex justify-center">
+        <n-pagination v-model:page="messagePage" :page-count="messageMaxPage" size="large" />
+      </div>
     </div>
   </n-modal>
 </template>

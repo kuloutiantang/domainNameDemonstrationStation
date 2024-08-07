@@ -3,21 +3,21 @@ import { ref, onMounted } from 'vue'
 
 // 引入 ECharts
 import * as echarts from 'echarts/core'
+import { BarChart } from 'echarts/charts'
 import {
   TitleComponent,
   TooltipComponent,
   GridComponent,
   LegendComponent
 } from 'echarts/components'
-import { BarChart } from 'echarts/charts'
-import { CanvasRenderer } from 'echarts/renderers'
+import { SVGRenderer } from 'echarts/renderers'
 echarts.use([
   TitleComponent,
   TooltipComponent,
   GridComponent,
   LegendComponent,
   BarChart,
-  CanvasRenderer
+  SVGRenderer
 ])
 
 /**
