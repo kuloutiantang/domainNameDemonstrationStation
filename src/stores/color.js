@@ -5,6 +5,8 @@ export const useColorStore = defineStore('color', () => {
   // 常量颜色
   const WHITE = [255, 255, 255]
   const BLACK = [13, 17, 23]
+  const BASE_TIME = 28
+  const CHANGE_RATE = 2
   // 主题颜色
   const beReady = ref(false)
   const colorR = ref(0)
@@ -24,10 +26,10 @@ export const useColorStore = defineStore('color', () => {
   const count = ref(0) // 当前步数
   const itSTime = ref(false) // 结束
   const minTime = computed(() => {
-    return Math.round(((100 * count.value) / step.value + 1) * 7)
+    return Math.round(((100 * count.value) / step.value + 1) * BASE_TIME)
   })
   const maxTime = computed(() => {
-    return Math.round(((100 * count.value) / step.value + 1) * 14)
+    return Math.round(((100 * count.value) / step.value + 1) * BASE_TIME * 2)
   })
   /**
    * 初始化颜色
@@ -139,7 +141,7 @@ export const useColorStore = defineStore('color', () => {
    * @returns {number}
    */
   const gradient = (c, min = 0, max = 255) => {
-    c += Rand(-1, 1)
+    c += Rand(-CHANGE_RATE, CHANGE_RATE)
     c = c < min ? min : c
     c = c > max ? max : c
     return c

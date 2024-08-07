@@ -66,6 +66,9 @@ const search = async () => {
           newItem.timeEnd = dayjs(item.updatedate).format('YYYY-MM-DD')
           newItem.tagsArr = item.tags.split(',')
           newItem.markDown = marked.parse(item.content)
+          newItem.tagsArrColor = newItem.tagsArr.map(() => {
+            return randomHEX()
+          })
           list.push(newItem)
         }
         articleList.value = list
@@ -410,12 +413,15 @@ const randomHEX = () => {
 </script>
 <template>
   <!-- 正文 -->
-  <div class="w-100vw h-100vh flex flex-col justify-start items-center">
+  <div
+    class="w-100vw h-100vh flex flex-col justify-start items-center"
+    :style="'--var-theme-color: ' + color.themeColor"
+  >
     <n-affix
       :top="0"
       :trigger-top="0"
       class="box-border bg-theme w-full h-70px flex flex-col justify-center items-center border-1px border-b-solid z-2 <xl:(hidden)"
-      :style="'color: ' + color.themeColor"
+      style="color: var(--var-theme-color)"
     >
       <n-page-header class="w-1200px">
         <template #title>
@@ -423,12 +429,12 @@ const randomHEX = () => {
             <div
               @click="router.go(-1)"
               class="cursor-pointer size-35px transition-777 i-solar-home-smile-bold-duotone"
-              :style="'color: ' + color.themeColor"
+              style="color: var(--var-theme-color)"
             ></div>
             <div class="w-21px"></div>
             <div
               class="fw-900 text-28px lh-42px cursor-pointer select-none"
-              :style="'color: ' + color.themeColor"
+              style="color: var(--var-theme-color)"
               @click="getData(true)"
             >
               知识碎片
@@ -485,17 +491,17 @@ const randomHEX = () => {
               :key="index_a_ta"
               @click="searchTag(item_a_ta)"
             >
-              <n-tag round class="cursor-pointer" :color="{ color: randomHEX() + '22' }">
+              <n-tag
+                round
+                class="cursor-pointer"
+                :style="'background: ' + item_a.tagsArrColor[index_a_ta] + '22;'"
+              >
                 {{ item_a_ta }}
               </n-tag>
             </div>
           </n-space>
           <div class="h-7px"></div>
-          <div
-            class="markdown-body"
-            :style="'--fgColor-accent: ' + color.themeColor"
-            v-html="item_a.markDown"
-          ></div>
+          <div class="markdown-body" v-html="item_a.markDown"></div>
           <div class="h-14px"></div>
           <div
             class="w-full select-none flex flex-row flex-wrap justify-between text-center text-14px lh-35px"
@@ -650,3 +656,8 @@ const randomHEX = () => {
     </div>
   </n-modal>
 </template>
+<style>
+.markdown-body a {
+  color: var(--var-theme-color);
+}
+</style>

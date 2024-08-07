@@ -34,6 +34,14 @@ const router = createRouter({
       meta: {
         title: 'WebSocket示例'
       }
+    },
+    {
+      path: '/three',
+      name: 'Three.js',
+      component: () => import('../views/pages/threeTesting.vue'),
+      meta: {
+        title: 'ThreeJS示例'
+      }
     }
   ]
 })

@@ -5,11 +5,6 @@
   width: 0px;
 }
 
-#app {
-  min-height: 100vh;
-  position: relative;
-}
-
 a {
   color: var(--color-text);
   text-decoration: none; /* 去除下划线 */
