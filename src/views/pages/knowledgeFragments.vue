@@ -391,8 +391,11 @@ const displayMessage = () => {
   getMessage()
 }
 
+const locationhost = ref('')
+
 // 生命周期
 onMounted(() => {
+  locationhost.value = window.location.host
   !color.beReady && color.init(7)
   // 静默登录
   user.localUser()
@@ -412,6 +415,19 @@ const randomHEX = () => {
 }
 </script>
 <template>
+  <!-- 水印 -->
+  <n-watermark
+    :content="locationhost"
+    cross
+    fullscreen
+    :font-size="14"
+    :line-height="21"
+    :width="560"
+    :height="210"
+    :x-offset="0"
+    :y-offset="140"
+    :rotate="-14"
+  />
   <!-- 正文 -->
   <div
     class="w-100vw h-100vh flex flex-col justify-start items-center"
@@ -433,9 +449,9 @@ const randomHEX = () => {
             ></div>
             <div class="w-21px"></div>
             <div
+              @click="getData(true)"
               class="fw-900 text-28px lh-42px cursor-pointer select-none"
               style="color: var(--var-theme-color)"
-              @click="getData(true)"
             >
               知识碎片
             </div>
@@ -466,6 +482,9 @@ const randomHEX = () => {
             >
             <n-button v-if="user.isLogin" @click="displayMessage()" strong type="info"
               >留言</n-button
+            >
+            <n-button v-if="user.isLogin" @click="router.push('/monitor')" strong type="error"
+              >监控</n-button
             >
             <n-button v-if="user.isLogin" @click="user.logout()" strong type="error">退出</n-button>
             <div v-if="user.isLogin" class="h-full flex justify-center items-center select-none">

@@ -16,6 +16,14 @@ export const useColorStore = defineStore('color', () => {
   const themeColor = computed(
     () => 'rgb(' + colorR.value + ',' + colorG.value + ',' + colorB.value + ')'
   )
+  /**
+   * 透明主题色
+   * @param {number} op 透明度
+   * @returns 透明主题色
+   */
+  const themeColorOp = (op) => {
+    return 'rgb(' + colorR.value + ' ' + colorG.value + ' ' + colorB.value + ' / ' + op + ')'
+  }
   // 其他颜色
   const targetColorArr = ref([255, 255, 255]) // 目标颜色
   const targetColor = computed(() => 'rgb(' + targetColorArr.value.join(',') + ')')
@@ -173,6 +181,7 @@ export const useColorStore = defineStore('color', () => {
     targetColor,
     initialColor,
     approaching,
-    itSTime
+    itSTime,
+    themeColorOp
   }
 })

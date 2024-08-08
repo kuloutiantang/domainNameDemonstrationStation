@@ -20,6 +20,14 @@ const router = createRouter({
       }
     },
     {
+      path: '/monitor',
+      name: '监控',
+      component: () => import('../views/pages/monitorView.vue'),
+      meta: {
+        title: '监控'
+      }
+    },
+    {
       path: '/chart',
       name: '图表',
       component: () => import('../views/pages/chartTesting.vue'),
