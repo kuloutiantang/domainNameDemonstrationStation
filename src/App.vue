@@ -1,9 +1,16 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
+// css
 import { useOsTheme, darkTheme } from 'naive-ui'
 const osThemeRef = useOsTheme()
 const theme = computed(() => (osThemeRef.value === 'dark' ? darkTheme : null))
+// 日志
+import axios from 'axios'
+
+onMounted(() => {
+  axios.get('http://nodeapi.kuloutiantang.top/in/' + window.btoa(window.location.host))
+})
 </script>
 
 <template>

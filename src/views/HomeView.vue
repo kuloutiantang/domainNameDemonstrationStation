@@ -4,23 +4,11 @@ import VersionNumber from '@/components/VersionNumber.vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 import { useColorStore } from '@/stores/color'
-import axios from 'axios'
 const color = useColorStore()
 
 onMounted(() => {
   !color.beReady && color.init(7)
-  // 访问记录
-  logIn()
 })
-
-/**
- * 静默登录1
- */
-const logIn = () => {
-  let originalWebsite = 'http://www.kuloutiantang.top'
-  let target = window.btoa(originalWebsite)
-  axios.get('http://nodeapi.kuloutiantang.top/in/' + target)
-}
 
 /**
  * 点击
