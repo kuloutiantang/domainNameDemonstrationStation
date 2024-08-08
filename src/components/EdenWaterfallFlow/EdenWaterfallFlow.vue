@@ -36,7 +36,9 @@ const calculateData = () => {
   column.value = props.col
   numberOfColumns.value = props.col * 2 - 1
   // 根元素宽度
-  rootWidth.value = shows.value.offsetWidth >= 1200 ? 1200 : shows.value.offsetWidth
+  let rWidth = shows.value.scrollWidth
+  rWidth = rWidth < 1136 ? 1136 : rWidth
+  rootWidth.value = rWidth
   // 间距
   spacing.value = props.gap
   // 计算列宽
