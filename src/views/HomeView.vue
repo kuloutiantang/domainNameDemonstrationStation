@@ -17,7 +17,9 @@ onMounted(() => {
  * 静默登录1
  */
 const logIn = () => {
-  axios.get('http://nodeapi.kuloutiantang.top/in')
+  let originalWebsite = 'http://www.kuloutiantang.top'
+  let target = window.btoa(originalWebsite)
+  axios.get('http://nodeapi.kuloutiantang.top/in/' + target)
 }
 
 /**
