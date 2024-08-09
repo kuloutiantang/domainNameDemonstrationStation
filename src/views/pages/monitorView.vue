@@ -149,6 +149,11 @@ const renderBarChart = (container, options) => {
   chart.render()
   return chart
 }
+
+const logout = () => {
+  user.logout()
+  router.push('/')
+}
 </script>
 <template>
   <div
@@ -184,7 +189,7 @@ const renderBarChart = (container, options) => {
         </template>
         <template #extra>
           <n-space>
-            <n-button v-if="user.isLogin" @click="user.logout()" strong type="error">退出</n-button>
+            <n-button v-if="user.isLogin" @click="logout()" strong type="error">退出</n-button>
             <div v-if="user.isLogin" class="h-full flex justify-center items-center select-none">
               <span>{{ user.user.email }}</span>
             </div>
