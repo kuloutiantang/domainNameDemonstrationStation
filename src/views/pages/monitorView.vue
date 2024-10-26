@@ -26,9 +26,12 @@ const table1Container = ref(null)
 const table2Container = ref(null)
 const table1 = ref({})
 const table2 = ref({})
+let table1Chart = null
+let table2Chart = null
 
 onMounted(() => {
   !color.beReady && color.init(7)
+  createChart()
   getData()
 })
 
@@ -141,6 +144,91 @@ const getData = async () => {
   renderBarChart(table2Container.value, table2.value.options)
 }
 
+const createChart = () => {
+  let table1Original = [
+    {
+      day: '',
+      num: 0
+    }
+  ]
+  table1.value.options = {
+    theme: 'classicDark',
+    type: 'view',
+    autoFit: true,
+    data: {
+      value: table1Original,
+      transform: [
+        {
+          type: 'rename',
+          day: '日期',
+          num: '人数'
+        }
+      ]
+    },
+    encode: { x: '日期', y: '人数' },
+    axis: {
+      x: { title: null, tick: false, line: true },
+      y: { title: null, grid: false, tick: false, label: false }
+    },
+    children: [
+      { type: 'line', encode: { shape: 'smooth' } },
+      { type: 'point', tooltip: false },
+      {
+        type: 'text',
+        encode: { x: '日期', y: '人数', text: '人数' },
+        style: { fill: 'rgba(230, 237, 243, 0.64)', textAlign: 'center', dy: -10 },
+        tooltip: false
+      }
+    ],
+    text: {
+      fontSize: '14px'
+    },
+    color: { palette: 'greys' }
+  }
+  table1Chart = renderBarChart(table1Container.value, table1.value.options)
+  let table2Original = [
+    {
+      day: '',
+      num: 0
+    }
+  ]
+  table2.value.options = {
+    theme: 'classicDark',
+    type: 'view',
+    autoFit: true,
+    data: {
+      value: table2Original,
+      transform: [
+        {
+          type: 'rename',
+          day: '日期',
+          num: '人数'
+        }
+      ]
+    },
+    encode: { x: '日期', y: '人数' },
+    axis: {
+      x: { title: null, tick: false, line: true },
+      y: { title: null, grid: false, tick: false, label: false }
+    },
+    children: [
+      { type: 'line', encode: { shape: 'smooth' } },
+      { type: 'point', tooltip: false },
+      {
+        type: 'text',
+        encode: { x: '日期', y: '人数', text: '人数' },
+        style: { fill: 'rgba(230, 237, 243, 0.64)', textAlign: 'center', dy: -10 },
+        tooltip: false
+      }
+    ],
+    text: {
+      fontSize: '14px'
+    },
+    color: { palette: 'greys' }
+  }
+  table2Chart = renderBarChart(table2Container.value, table2.value.options)
+}
+
 const renderBarChart = (container, options) => {
   const chart = new Chart({
     container
@@ -189,6 +277,7 @@ const logout = () => {
         </template>
         <template #extra>
           <n-space>
+            <n-button v-if="user.isLogin" @click="getData()" strong type="info">刷新</n-button>
             <n-button v-if="user.isLogin" @click="logout()" strong type="error">退出</n-button>
             <div v-if="user.isLogin" class="h-full flex justify-center items-center select-none">
               <span>{{ user.user.email }}</span>

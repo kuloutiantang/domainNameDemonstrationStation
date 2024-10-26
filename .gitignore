@@ -1,4 +1,4 @@
-# Logs
+# 日志文件
 logs
 *.log
 npm-debug.log*
@@ -6,7 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
+# 包文件
 node_modules
 .DS_Store
 dist-ssr
@@ -16,7 +16,7 @@ coverage
 /cypress/videos/
 /cypress/screenshots/
 
-# Editor directories and files
+# IDE 临时文件
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -25,5 +25,5 @@ coverage
 *.njsproj
 *.sln
 *.sw?
-
 *.tsbuildinfo
+folder-alias.json
